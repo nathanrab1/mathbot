@@ -292,12 +292,8 @@
     <value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value>
   </block>
   <sep gap="8"></sep>
-  <block type="logo_esquerda">
-    <value name="GRAUS"><block type="math_number"><field name="NUM">90</field></block></value>
-  </block>
-  <block type="logo_direita">
-    <value name="GRAUS"><block type="math_number"><field name="NUM">90</field></block></value>
-  </block>
+  <block type="logo_esquerda"></block>
+  <block type="logo_direita"></block>
 
   <sep gap="12"></sep>
   <button text="Pintar" callbackKey="noop" web-class="cat-hdr cat-pintar"></button>
@@ -359,7 +355,7 @@ Blockly.defineBlocksWithJsonArray([
     type: 'ao_iniciar',
     message0: 'Ao iniciar',
     nextStatement: null,
-    colour: '#E8572A',
+    colour: '#16a34a',
     tooltip: 'Ponto de início — conecte os blocos aqui',
     helpUrl: ''
   },
@@ -425,23 +421,19 @@ Blockly.defineBlocksWithJsonArray([
   },
   {
     type: 'logo_esquerda',
-    message0: '↶ Girar esquerda %1 graus',
-    args0: [{ type: 'input_value', name: 'GRAUS', check: 'Number' }],
-    inputsInline: true,
+    message0: '↶ Girar esquerda',
     previousStatement: null,
     nextStatement: null,
     colour: '#CC9900',
-    tooltip: 'Gira a tartaruga para a esquerda pelo ângulo especificado'
+    tooltip: 'Gira a tartaruga 90° para a esquerda'
   },
   {
     type: 'logo_direita',
-    message0: '↷ Girar direita %1 graus',
-    args0: [{ type: 'input_value', name: 'GRAUS', check: 'Number' }],
-    inputsInline: true,
+    message0: '↷ Girar direita',
     previousStatement: null,
     nextStatement: null,
     colour: '#CC9900',
-    tooltip: 'Gira a tartaruga para a direita pelo ângulo especificado'
+    tooltip: 'Gira a tartaruga 90° para a direita'
   },
   {
     type: 'logo_cor',
@@ -554,6 +546,13 @@ Blockly.defineBlocksWithJsonArray([
   }
 ]);
 
+// Sobrescreve a cor do bloco nativo "Repita"
+const _origRepeatInit = Blockly.Blocks['controls_repeat_ext'].init;
+Blockly.Blocks['controls_repeat_ext'].init = function() {
+  _origRepeatInit.call(this);
+  this.setColour('#2563eb');
+};
+
 // ─── Code Generators ─────────────────────────────────────
 const Order = javascript.Order;
 const gen   = Blockly.JavaScript;
@@ -590,13 +589,11 @@ gen.forBlock['logo_mover_baixo'] = function(block, g) {
 };
 
 gen.forBlock['logo_esquerda'] = function(block, g) {
-  const n = g.valueToCode(block, 'GRAUS', Order.ATOMIC) || '90';
-  return `commands.push({t:'l',n:${n}});\n`;
+  return `commands.push({t:'l',n:90});\n`;
 };
 
 gen.forBlock['logo_direita'] = function(block, g) {
-  const n = g.valueToCode(block, 'GRAUS', Order.ATOMIC) || '90';
-  return `commands.push({t:'r',n:${n}});\n`;
+  return `commands.push({t:'r',n:90});\n`;
 };
 
 gen.forBlock['logo_cor'] = function(block, g) {
@@ -1047,11 +1044,40 @@ requestAnimationFrame(() => {
   resize();
   Blockly.svgResize(workspace);
   workspace.updateToolbox(document.getElementById('toolbox'));
-  // MutationObserver: garante escala 1 no canvas do flyout caso
-  // algum caminho do Blockly não passe pelo setScale interceptado acima.
   requestAnimationFrame(() => {
+    const fly   = workspace.getFlyout();
     const flyEl = document.querySelector('.blocklyFlyout');
     const cv    = flyEl && flyEl.querySelector('.blocklyBlockCanvas');
+
+    // Congela a LARGURA do flyout no valor de scale=1.
+    // Blockly recalcula fly.width_ a cada zoom e usa esse valor tanto para
+    // dimensionar o SVG do flyout quanto para calcular o offset do workspace.
+    if (fly) {
+      const grp   = fly.svgGroup_;
+      const baseW = (typeof fly.width_ === 'number' && fly.width_ > 0)
+                    ? fly.width_
+                    : (grp && parseFloat(grp.getAttribute('width'))) || 0;
+      if (baseW > 0) {
+        try {
+          Object.defineProperty(fly, 'width_', {
+            get: () => baseW, set: () => {}, configurable: true
+          });
+        } catch (e) {}
+        // Backup via MutationObserver no atributo width do grupo SVG
+        if (grp) {
+          let wb = false;
+          new MutationObserver(() => {
+            if (wb) return;
+            const w = parseFloat(grp.getAttribute('width'));
+            if (w && Math.abs(w - baseW) > 0.5) {
+              wb = true; grp.setAttribute('width', baseW); wb = false;
+            }
+          }).observe(grp, { attributes: true, attributeFilter: ['width'] });
+        }
+      }
+    }
+
+    // Congela a ESCALA dos blocos na biblioteca (backup além do setScale override)
     if (!cv) return;
     let busy = false;
     new MutationObserver(() => {
@@ -1063,20 +1089,43 @@ requestAnimationFrame(() => {
   });
 });
 
+// Scroll da biblioteca de blocos — captura o evento ANTES do handler do Blockly
+// para garantir a direção correta e evitar conflitos.
+window.addEventListener('wheel', function(e) {
+  const flyoutEl = document.querySelector('.blocklyFlyout');
+  if (!flyoutEl) return;
+  const r = flyoutEl.getBoundingClientRect();
+  if (e.clientX < r.left || e.clientX > r.right ||
+      e.clientY < r.top  || e.clientY > r.bottom) return;
+
+  e.preventDefault();
+  e.stopImmediatePropagation();
+
+  const fly = workspace.getFlyout();
+  if (!fly) return;
+  const fw = fly.getWorkspace ? fly.getWorkspace() : fly.workspace_;
+  const cv = fw && fw.svgBlockCanvas_;
+  if (!cv) return;
+
+  const t  = cv.getAttribute('transform') || '';
+  const m  = t.match(/translate\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+  const tx = m ? parseFloat(m[1]) : 0;
+  const ty = m ? parseFloat(m[2]) : 0;
+
+  // deltaY > 0 → rolar para baixo (mostrar blocos abaixo)
+  // deltaY < 0 → rolar para cima  (mostrar blocos acima)
+  const newTy = Math.min(0, ty - e.deltaY);
+  cv.setAttribute('transform', `translate(${tx},${newTy})`);
+}, { capture: true, passive: false });
+
 // Zoom manual com mouse — só na área de programação, nunca no flyout.
-// O zoom nativo do Blockly (wheel:false acima) foi desativado para podermos
-// controlar exatamente quando o zoom deve acontecer.
 document.getElementById('blocklyDiv').addEventListener('wheel', function (e) {
-  // Verifica se o cursor está sobre o flyout (biblioteca de blocos)
   const flyoutEl = document.querySelector('.blocklyFlyout');
   if (flyoutEl) {
     const r = flyoutEl.getBoundingClientRect();
     if (e.clientX >= r.left && e.clientX <= r.right &&
-        e.clientY >= r.top  && e.clientY <= r.bottom) {
-      return; // Deixa o scroll do flyout funcionar normalmente
-    }
+        e.clientY >= r.top  && e.clientY <= r.bottom) return;
   }
-  // Fora do flyout → aplica zoom no workspace
   const svg = workspace.getParentSvg();
   const pt  = svg.createSVGPoint();
   pt.x = e.clientX;
