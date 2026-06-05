@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emoji Coder — Tutorial</title>
+  <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/javascript_compressed.js"></script>
+  <script src="https://unpkg.com/blockly/msg/pt-br.js"></script>
+  <script src="https://unpkg.com/@blockly/field-colour/dist/index.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    #header { background: #fff; padding: 0 20px; height: 54px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+    #header h1 { font-size: 1.15rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
+    #header .subtitle { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
+    #header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    #progress-label { font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; }
+    .btn-back { font-size: 0.78rem; font-weight: 600; color: #6b7280; text-decoration: none; padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; }
+    .btn-back:hover { background: #e5e7eb; }
+    #main { display: flex; flex: 1; overflow: hidden; }
+    #workspace-container { flex: 1; position: relative; min-width: 0; }
+    #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+    #right-panel { width: 290px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; border-left: 1px solid #e5e7eb; overflow-y: auto; box-shadow: -2px 0 10px rgba(0,0,0,0.04); }
+    .r-section { background: #f8f9fb; border-radius: 12px; padding: 12px; border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 8px; }
+    .panel-label { font-size: 0.62rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+    #turtle-canvas { display: block; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; width: 100%; height: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
+    #controls { display: flex; gap: 6px; width: 100%; }
+    .btn { flex: 1; padding: 9px 4px; border: none; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em; box-shadow: 0 2px 5px rgba(0,0,0,0.12); }
+    .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+    .btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 1px 3px rgba(0,0,0,0.1); filter: brightness(0.95); }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+    #btn-executar { background: #16a34a; color: #fff; }
+    #btn-passo    { background: #2563eb; color: #fff; }
+    #btn-parar    { background: #dc2626; color: #fff; }
+    #speed-row { display: flex; align-items: center; gap: 8px; width: 100%; }
+    #speed-row span { font-size: 0.95rem; flex-shrink: 0; }
+    #speed-slider { flex: 1; accent-color: #16a34a; cursor: pointer; height: 4px; }
+    #status-box { background: #f8f9fb; border-radius: 12px; padding: 11px 14px; min-height: 52px; border: 1px solid #e5e7eb; }
+    #status-title { font-size: 0.6rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 5px; }
+    #status-text { font-size: 0.85rem; color: #111827; font-weight: 500; }
+    #project-row { display: flex; gap: 8px; width: 100%; }
+    .btn-project { background: #f0f2f5; color: #374151; font-size: 0.76rem; border: 1px solid #e5e7eb; font-weight: 600; box-shadow: none; }
+    .btn-project:hover:not(:disabled) { background: #e5e7eb; transform: none; box-shadow: none; filter: none; }
+    .blocklyFlyout .blocklyScrollbarKnob { fill-opacity: 0.55 !important; }
+    .blocklyFlyout .blocklyScrollbarBackground { fill-opacity: 0.18 !important; }
+    #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+    #modal-overlay.hidden { display: none; }
+    #modal-card { background: #fff; border-radius: 20px; padding: 36px 32px 28px; max-width: 480px; width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,0.18); display: flex; flex-direction: column; gap: 14px; animation: modalIn 0.25s ease; }
+    @keyframes modalIn { from{opacity:0;transform:scale(0.94) translateY(12px);}to{opacity:1;transform:scale(1) translateY(0);} }
+    #modal-progress { font-size: 0.65rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; }
+    #modal-dots { display: flex; gap: 6px; margin-top: 4px; }
+    .modal-dot { width: 8px; height: 8px; border-radius: 50%; background: #e5e7eb; }
+    .modal-dot.active { background: #16a34a; }
+    .modal-dot.done   { background: #bbf7d0; }
+    #modal-title { font-size: 1.55rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; line-height: 1.2; }
+    #modal-description { font-size: 0.95rem; color: #374151; line-height: 1.65; }
+    #modal-tip { font-size: 0.85rem; color: #4b5563; background: #f0f9ff; border-radius: 10px; padding: 12px 14px; border-left: 3px solid #2563eb; line-height: 1.55; }
+    #modal-tip:empty { display: none; }
+    #modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    .modal-btn-primary { padding: 11px 24px; background: #16a34a; color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .modal-btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .modal-btn-secondary { padding: 11px 18px; background: #f0f2f5; color: #374151; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.15s; }
+    .modal-btn-secondary:hover { background: #e5e7eb; }
+  </style>
+</head>
+<body>
+
+<div id="header">
+  <span style="font-size:1.5rem;line-height:1">🐢</span>
+  <div>
+    <h1>Emoji Coder</h1>
+    <div class="subtitle">Tutorial</div>
+  </div>
+  <div id="header-right">
+    <span id="progress-label">Desafio 1 / 5</span>
+    <a href="index.html" class="btn-back">← Início</a>
+  </div>
+</div>
+
+<div id="main">
+  <div id="workspace-container">
+    <div id="blocklyDiv"></div>
+  </div>
+  <div id="right-panel">
+    <div class="r-section">
+      <div class="panel-label">Tela da Tartaruga</div>
+      <canvas id="turtle-canvas" width="320" height="320"></canvas>
+    </div>
+    <div class="r-section">
+      <div id="controls">
+        <button class="btn" id="btn-executar">&#x25B6; Executar</button>
+        <button class="btn" id="btn-passo" disabled>&#x23ED; Passo</button>
+        <button class="btn" id="btn-parar" disabled>&#x25A0; Parar</button>
+      </div>
+      <div id="speed-row">
+        <span>🐢</span>
+        <input type="range" id="speed-slider" min="1" max="10" value="5">
+        <span>⚡</span>
+      </div>
+    </div>
+    <div id="status-box">
+      <div id="status-title">Status</div>
+      <div id="status-text">Pronto</div>
+    </div>
+    <div class="r-section">
+      <div class="panel-label">Projeto</div>
+      <div id="project-row">
+        <button class="btn btn-project" id="btn-baixar">⬇ Baixar</button>
+        <button class="btn btn-project" id="btn-carregar">⬆ Carregar</button>
+        <input type="file" id="file-input" accept=".json" style="display:none">
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modal-overlay" class="hidden">
+  <div id="modal-card">
+    <div>
+      <div id="modal-progress"></div>
+      <div id="modal-dots"></div>
+    </div>
+    <h2 id="modal-title"></h2>
+    <p id="modal-description"></p>
+    <p id="modal-tip"></p>
+    <div id="modal-footer"></div>
+  </div>
+</div>
+
+<script>
+// ── Registrar field_colour ──────────────────────────────────
+if (typeof registerFieldColour === 'function') registerFieldColour();
+
+// ── Block Definitions ───────────────────────────────────────
+Blockly.defineBlocksWithJsonArray([
+  { type:'ao_iniciar', message0:'Ao iniciar', nextStatement:null, colour:'#16a34a' },
+  { type:'logo_frente', message0:'Frente %1 passos', args0:[{type:'input_value',name:'PASSOS',check:'Number'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#CC9900' },
+  { type:'logo_mover_esquerda', message0:'← Esquerda %1 passos', args0:[{type:'input_value',name:'PASSOS',check:'Number'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#CC9900' },
+  { type:'logo_mover_baixo', message0:'↓ Baixo %1 passos', args0:[{type:'input_value',name:'PASSOS',check:'Number'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#CC9900' },
+  { type:'logo_esquerda', message0:'↶ Girar esquerda', previousStatement:null, nextStatement:null, colour:'#CC9900' },
+  { type:'logo_direita',  message0:'↷ Girar direita',  previousStatement:null, nextStatement:null, colour:'#CC9900' },
+  { type:'logo_cor', message0:'Pintar %1', args0:[{type:'field_colour',name:'COR',colour:'#4361ee'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#E91E63' },
+  { type:'logo_cor_azul', message0:'Pintar 🔵', previousStatement:null, nextStatement:null, colour:'#E91E63' },
+  { type:'func_definir', message0:'Definir %1', args0:[{type:'field_input',name:'NOME',text:'minha_funcao'}], message1:'%1', args1:[{type:'input_statement',name:'CORPO'}], colour:'#9C27B0' },
+  { type:'func_chamar',  message0:'Chamar %1',  args0:[{type:'field_input',name:'NOME',text:'minha_funcao'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#9C27B0' }
+]);
+(function(){const o=Blockly.Blocks['controls_repeat_ext'].init;Blockly.Blocks['controls_repeat_ext'].init=function(){o.call(this);this.setColour('#2563eb');};})();
+
+const Order=javascript.Order, gen=Blockly.JavaScript;
+gen.forBlock['ao_iniciar']       = ()=>'';
+gen.forBlock['logo_frente']      = (b,g)=>`commands.push({t:'f',n:${g.valueToCode(b,'PASSOS',Order.ATOMIC)||'1'}});\n`;
+gen.forBlock['logo_mover_esquerda']=(b,g)=>`commands.push({t:'ld',n:${g.valueToCode(b,'PASSOS',Order.ATOMIC)||'1'}});\n`;
+gen.forBlock['logo_mover_baixo'] = (b,g)=>`commands.push({t:'dd',n:${g.valueToCode(b,'PASSOS',Order.ATOMIC)||'1'}});\n`;
+gen.forBlock['logo_esquerda']    = ()=>`commands.push({t:'l',n:90});\n`;
+gen.forBlock['logo_direita']     = ()=>`commands.push({t:'r',n:90});\n`;
+gen.forBlock['logo_cor']         = (b)=>`commands.push({t:'cor',cor:'${b.getFieldValue('COR')}'});\n`;
+gen.forBlock['logo_cor_azul']    = ()=>`commands.push({t:'cor',cor:'#2563eb'});\n`;
+gen.forBlock['func_definir']     = (b,g)=>`funcoes[${JSON.stringify(b.getFieldValue('NOME')||'f')}]=function(){\n${g.statementToCode(b,'CORPO')}};\n`;
+gen.forBlock['func_chamar']      = (b)=>{const n=JSON.stringify(b.getFieldValue('NOME')||'f');return `if(funcoes[${n}])funcoes[${n}]();\n`;};
+
+// ── Turtle Engine ────────────────────────────────────────────
+const CELL=40;
+let GRID_COLS=8,GRID_ROWS=8,CANVAS_W=320,CANVAS_H=320;
+let GRID_MIN_X=20,GRID_MAX_X=300,GRID_MIN_Y=20,GRID_MAX_Y=300;
+let preDrawnCells={};
+function initGrid(cols,rows){
+  GRID_COLS=cols;GRID_ROWS=rows;CANVAS_W=cols*CELL;CANVAS_H=rows*CELL;
+  GRID_MIN_X=CELL/2;GRID_MAX_X=(cols-1)*CELL+CELL/2;
+  GRID_MIN_Y=CELL/2;GRID_MAX_Y=(rows-1)*CELL+CELL/2;
+  const cv=document.getElementById('turtle-canvas');if(cv){cv.width=CANVAS_W;cv.height=CANVAS_H;}
+}
+function setPreDrawn(cells){preDrawnCells=cells||{};}
+function cellKey(cx,cy){return Math.round((cy-CELL/2)/CELL)+','+Math.round((cx-CELL/2)/CELL);}
+function makeTurtle(r=0,c=0){return{x:c*CELL+CELL/2,y:r*CELL+CELL/2,angle:90,penColor:'#e74c3c',painted:{}};}
+let turtle=makeTurtle();
+function paintCurrentCell(){turtle.painted[cellKey(turtle.x,turtle.y)]=turtle.penColor;}
+function render(){
+  const cv=document.getElementById('turtle-canvas');if(!cv)return;
+  const ctx=cv.getContext('2d');ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
+  for(let r=0;r<GRID_ROWS;r++)for(let c=0;c<GRID_COLS;c++){ctx.fillStyle=(r+c)%2===0?'#f8f9fb':'#fff';ctx.fillRect(c*CELL,r*CELL,CELL,CELL);}
+  for(const[k,col]of Object.entries(preDrawnCells)){const[r,c]=k.split(',').map(Number);ctx.fillStyle=col;ctx.fillRect(c*CELL,r*CELL,CELL,CELL);}
+  for(const[k,col]of Object.entries(turtle.painted)){const[r,c]=k.split(',').map(Number);ctx.fillStyle=col;ctx.fillRect(c*CELL,r*CELL,CELL,CELL);}
+  ctx.save();ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
+  for(let i=0;i<=GRID_COLS;i++){ctx.beginPath();ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,CANVAS_H);ctx.stroke();}
+  for(let i=0;i<=GRID_ROWS;i++){ctx.beginPath();ctx.moveTo(0,i*CELL);ctx.lineTo(CANVAS_W,i*CELL);ctx.stroke();}
+  ctx.restore();
+  const rad=turtle.angle*Math.PI/180;ctx.save();ctx.translate(turtle.x,turtle.y);ctx.rotate(rad);
+  ctx.shadowColor='rgba(0,0,0,0.22)';ctx.shadowBlur=5;ctx.shadowOffsetY=2;
+  ctx.fillStyle='#3cb371';ctx.strokeStyle='#2d8653';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.ellipse(0,2,10,8,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+  ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=0.8;
+  [[-5,-1,5,-1],[-7,4,7,4],[0,-4,0,10],[-5,-1,-7,4],[5,-1,7,4]].forEach(([x1,y1,x2,y2])=>{ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();});
+  ctx.fillStyle='#2d8653';ctx.strokeStyle='#1e6640';ctx.lineWidth=1;
+  ctx.beginPath();ctx.ellipse(0,-13,5,5,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(2,-14,2.2,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#111';ctx.beginPath();ctx.arc(2.5,-14,1.1,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#1e6640';ctx.beginPath();ctx.arc(0,-18,2,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+}
+function clampTurtle(){turtle.x=Math.max(GRID_MIN_X,Math.min(GRID_MAX_X,turtle.x));turtle.y=Math.max(GRID_MIN_Y,Math.min(GRID_MAX_Y,turtle.y));}
+function applyCmd(cmd){
+  const rad=turtle.angle*Math.PI/180,dx=Math.sin(rad),dy=-Math.cos(rad);
+  switch(cmd.t){
+    case'f':turtle.x+=dx*cmd.n*CELL;turtle.y+=dy*cmd.n*CELL;clampTurtle();break;
+    case'b':turtle.x-=dx*cmd.n*CELL;turtle.y-=dy*cmd.n*CELL;clampTurtle();break;
+    case'l':turtle.angle=(turtle.angle-cmd.n%360+360)%360;break;
+    case'r':turtle.angle=(turtle.angle+cmd.n)%360;break;
+    case'rd':turtle.x+=cmd.n*CELL;clampTurtle();break;
+    case'ld':turtle.x-=cmd.n*CELL;clampTurtle();break;
+    case'ud':turtle.y-=cmd.n*CELL;clampTurtle();break;
+    case'dd':turtle.y+=cmd.n*CELL;clampTurtle();break;
+    case'cor':turtle.penColor=cmd.cor;paintCurrentCell();break;
+  }
+  render();
+}
+
+// ── Execution Engine ─────────────────────────────────────────
+const SPEED_DELAYS=[900,500,280,150,80,40,18,8,2,0];
+function getDelay(){return SPEED_DELAYS[(parseInt(document.getElementById('speed-slider').value,10)||5)-1]??0;}
+let _commands=[],_cmdIndex=0,_mode='idle',_timer=null,_startR=0,_startC=0,_onComplete=null;
+function setStatus(t){const e=document.getElementById('status-text');if(e)e.textContent=t;}
+function syncButtons(){
+  const e=document.getElementById('btn-executar'),p=document.getElementById('btn-passo'),s=document.getElementById('btn-parar');
+  if(e)e.disabled=_mode!=='idle';if(p)p.disabled=_mode==='running';if(s)s.disabled=_mode==='idle';
+}
+function buildCommands(ws){
+  const start=ws.getTopBlocks(true).find(b=>b.type==='ao_iniciar');
+  if(!start){setStatus('Conecte blocos ao "Ao iniciar"');return[];}
+  gen.init(ws);
+  let fc='';ws.getBlocksByType('func_definir').forEach(b=>{const c=gen.blockToCode(b);fc+=typeof c==='string'?c:'';});
+  const mc=gen.blockToCode(start);
+  const full=gen.finish('var funcoes={};\nvar vars={};\n'+fc+(typeof mc==='string'?mc:''));
+  const cmds=[];try{new Function('commands',full)(cmds);}catch(e){setStatus('Erro: '+e.message);console.error(e);}
+  return cmds;
+}
+function _done(msg){clearTimeout(_timer);_mode='idle';_commands=[];_cmdIndex=0;syncButtons();setStatus(msg);if(_onComplete&&msg.startsWith('Concluído'))_onComplete();}
+function _tick(ws){if(_mode!=='running')return;applyCmd(_commands[_cmdIndex]);_cmdIndex++;setStatus('Executando…  '+_cmdIndex+' / '+_commands.length);if(_cmdIndex<_commands.length){_timer=setTimeout(()=>_tick(ws),getDelay());}else{_done('Concluído ('+_commands.length+' passos)');}}
+function doRun(ws){turtle=makeTurtle(_startR,_startC);render();_commands=buildCommands(ws);if(!_commands.length)return;_cmdIndex=0;_mode='running';syncButtons();setStatus('Executando…  0 / '+_commands.length);_tick(ws);}
+function doStep(ws){if(_mode==='idle'){turtle=makeTurtle(_startR,_startC);render();_commands=buildCommands(ws);if(!_commands.length)return;_cmdIndex=0;_mode='stepping';syncButtons();}if(_cmdIndex>=_commands.length){_done('Concluído');return;}applyCmd(_commands[_cmdIndex]);_cmdIndex++;setStatus('Passo '+_cmdIndex+' / '+_commands.length);if(_cmdIndex>=_commands.length)_done('Concluído ('+_commands.length+' passos)');}
+function doStop(){clearTimeout(_timer);_done('Parado no passo '+_cmdIndex);}
+
+// ── Challenges ───────────────────────────────────────────────
+const CHALLENGES=[
+  {id:1,title:'Chegue ao objetivo!',description:'A tartaruga precisa chegar até o bloco verde no final da linha. Use o bloco Frente para avançar!',tip:'Cada Frente avança 1 passo. Quantos passos até o bloco verde?',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente'],preDrawn:{'0,7':'#22c55e'},validate(){return cellKey(turtle.x,turtle.y)==='0,7';},successMsg:'Você chegou ao objetivo! Aprendeu a mover a tartaruga com precisão.'},
+  {id:2,title:'Pinte a linha!',description:'Pinte todos os 8 blocos da linha de azul. Use Pintar para colorir a célula e Frente para avançar.',tip:'Pinte a célula atual, avance, pinte a próxima... repita para todos os 8 blocos!',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente','logo_cor_azul'],preDrawn:{},validate(){for(let c=0;c<8;c++)if(!turtle.painted['0,'+c])return false;return true;},successMsg:'Incrível! Você pintou a linha inteira — mas foi bem trabalhoso, né? Há uma forma melhor...'},
+  {id:3,title:'Use o Repita!',description:'Pinte a linha de azul novamente — mas desta vez use o bloco Repita para simplificar o código.',tip:'Coloque Pintar + Frente dentro do Repita. Quantas vezes você precisa repetir?',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente','logo_cor_azul','controls_repeat_ext'],preDrawn:{},validate(){for(let c=0;c<8;c++)if(!turtle.painted['0,'+c])return false;return true;},successMsg:'Perfeito! O bloco Repita deixou o código muito menor e mais elegante!'},
+  {id:4,title:'Crie uma função!',description:'Pinte as duas linhas do grid. Defina uma função que pinte uma linha inteira e chame-a duas vezes — uma por linha!',tip:'Defina uma função com Repita 4×(Pintar + Frente). Depois navegue até a próxima linha e chame a função de novo.',grid:{cols:4,rows:2},startPos:{row:0,col:0},blocks:['logo_frente','logo_mover_baixo','logo_mover_esquerda','logo_cor_azul','func_definir','func_chamar','controls_repeat_ext'],preDrawn:{},validate(){for(let r=0;r<2;r++)for(let c=0;c<4;c++)if(!turtle.painted[r+','+c])return false;return true;},successMsg:'Excelente! Funções permitem reutilizar código — defina uma vez, use quantas quiser!'},
+  {id:5,title:'Desenhe um quadrado!',description:'Pinte o perímetro do quadrado marcado na malha. Use Frente, Girar e Repita para traçar os 4 lados.',tip:'Tente: Repita 4 vezes — Repita 2×(Pintar + Frente), depois Girar direita.',grid:{cols:8,rows:8},startPos:{row:2,col:2},blocks:['logo_frente','logo_esquerda','logo_direita','logo_cor','controls_repeat_ext'],preDrawn:{'2,2':'#e0e0e0','2,3':'#e0e0e0','2,4':'#e0e0e0','3,4':'#e0e0e0','4,4':'#e0e0e0','4,3':'#e0e0e0','4,2':'#e0e0e0','3,2':'#e0e0e0'},validate(){return['2,2','2,3','2,4','3,4','4,4','4,3','4,2','3,2'].every(k=>turtle.painted[k]);},successMsg:'Fantástico! Você desenhou um quadrado usando código. Você é um(a) programador(a)!'}
+];
+
+// ── Toolbox builder ──────────────────────────────────────────
+const BLOCK_XML={
+  logo_frente:`<block type="logo_frente"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
+  logo_mover_esquerda:`<block type="logo_mover_esquerda"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
+  logo_mover_baixo:`<block type="logo_mover_baixo"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
+  logo_esquerda:`<block type="logo_esquerda"></block>`,
+  logo_direita:`<block type="logo_direita"></block>`,
+  logo_cor:`<block type="logo_cor"></block>`,
+  logo_cor_azul:`<block type="logo_cor_azul"></block>`,
+  controls_repeat_ext:`<block type="controls_repeat_ext"><value name="TIMES"><block type="math_number"><field name="NUM">4</field></block></value></block>`,
+  func_definir:`<block type="func_definir"></block>`,
+  func_chamar:`<block type="func_chamar"></block>`,
+};
+function buildToolboxXml(blocks){return'<xml xmlns="https://developers.google.com/blockly/xml">\n'+blocks.map(t=>BLOCK_XML[t]?'  '+BLOCK_XML[t]:'').filter(Boolean).join('\n')+'\n  <sep gap="300"></sep>\n</xml>';}
+
+// ── Flyout freeze ────────────────────────────────────────────
+function freezeFlyoutScale(ws){
+  const orig=ws.setScale;
+  ws.setScale=function(s){orig.call(this,s);const fly=this.getFlyout&&this.getFlyout(),fw=fly&&(fly.getWorkspace?fly.getWorkspace():fly.workspace_);if(!fw||fw.scale===1)return;fw.scale=1;const cv=fw.svgBlockCanvas_;if(cv){const t=cv.getAttribute('transform')||'';cv.setAttribute('transform',t.replace(/scale\s*\([^)]+\)/g,'').trim());}};
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const fly=ws.getFlyout(),flyEl=document.querySelector('.blocklyFlyout'),cv=flyEl&&flyEl.querySelector('.blocklyBlockCanvas');
+    if(fly){const grp=fly.svgGroup_,baseW=(typeof fly.width_==='number'&&fly.width_>0)?fly.width_:(grp&&parseFloat(grp.getAttribute('width')))||0;if(baseW>0){try{Object.defineProperty(fly,'width_',{get:()=>baseW,set:()=>{},configurable:true});}catch(e){}}}
+    if(!cv)return;let busy=false;new MutationObserver(()=>{if(busy)return;const t=cv.getAttribute('transform')||'',f=t.replace(/scale\s*\([^)]+\)/g,'').trim();if(f!==t){busy=true;cv.setAttribute('transform',f);busy=false;}}).observe(cv,{attributes:true,attributeFilter:['transform']});
+  }));
+}
+
+// ── Modal ────────────────────────────────────────────────────
+function showModal({progress,title,description,tip,primaryLabel,primaryAction,secondaryLabel,secondaryHref}){
+  document.getElementById('modal-progress').textContent=progress;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-description').textContent=description;
+  document.getElementById('modal-tip').textContent=tip||'';
+  const dots=document.getElementById('modal-dots');
+  dots.innerHTML=CHALLENGES.map((_,i)=>`<div class="modal-dot ${i<currentIdx?'done':i===currentIdx?'active':''}"></div>`).join('');
+  const footer=document.getElementById('modal-footer');footer.innerHTML='';
+  if(secondaryLabel&&secondaryHref){const a=document.createElement('a');a.href=secondaryHref;a.className='modal-btn-secondary';a.textContent=secondaryLabel;footer.appendChild(a);}
+  const btn=document.createElement('button');btn.className='modal-btn-primary';btn.textContent=primaryLabel;btn.onclick=primaryAction;footer.appendChild(btn);
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.add('hidden');}
+
+// ── Challenge loader ─────────────────────────────────────────
+let currentIdx=0,ws;
+function loadChallenge(idx){
+  currentIdx=idx;
+  const ch=CHALLENGES[idx];
+  localStorage.setItem('tutorialProgress',idx);
+  document.getElementById('progress-label').textContent='Desafio '+(idx+1)+' / '+CHALLENGES.length;
+  initGrid(ch.grid.cols,ch.grid.rows);
+  setPreDrawn(ch.preDrawn);
+  _startR=ch.startPos.row;_startC=ch.startPos.col;
+  turtle=makeTurtle(_startR,_startC);render();
+  _onComplete=()=>{if(ch.validate())showSuccessModal(ch);};
+  const xml=buildToolboxXml(ch.blocks);
+  if(ws){
+    ws.updateToolbox(xml);
+    ws.getAllBlocks().filter(b=>b.type!=='ao_iniciar').forEach(b=>b.dispose());
+    requestAnimationFrame(()=>{Blockly.svgResize(ws);ws.updateToolbox(xml);});
+  }
+  showModal({progress:'Desafio '+(idx+1)+' de '+CHALLENGES.length,title:ch.title,description:ch.description,tip:ch.tip,primaryLabel:idx===0?'Vamos lá! 🚀':'Começar desafio!',primaryAction:closeModal,secondaryLabel:'← Início',secondaryHref:'index.html'});
+}
+function showSuccessModal(ch){
+  const isLast=currentIdx>=CHALLENGES.length-1;
+  showModal({progress:'Desafio '+(currentIdx+1)+' de '+CHALLENGES.length,title:'🎉 Parabéns!',description:ch.successMsg,tip:'',primaryLabel:isLast?'🏁 Voltar ao início':'Próximo desafio →',primaryAction:isLast?()=>{window.location.href='index.html';}:()=>loadChallenge(currentIdx+1),secondaryLabel:'← Início',secondaryHref:'index.html'});
+}
+
+// ── Init ─────────────────────────────────────────────────────
+const params=new URLSearchParams(window.location.search);
+const saved=parseInt(localStorage.getItem('tutorialProgress')||'0',10);
+const startIdx=Math.max(0,Math.min(CHALLENGES.length-1,parseInt(params.get('c')??saved,10)));
+
+initGrid(CHALLENGES[startIdx].grid.cols,CHALLENGES[startIdx].grid.rows);
+
+ws=Blockly.inject('blocklyDiv',{
+  toolbox:buildToolboxXml(CHALLENGES[startIdx].blocks),scrollbars:true,trashcan:true,
+  zoom:{controls:true,wheel:false,startScale:1.0,maxScale:3,minScale:0.3},
+  grid:{spacing:24,length:6,colour:'#e0e0e0',snap:false}
+});
+ws.registerButtonCallback('noop',()=>{});
+Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom('<xml><block type="ao_iniciar" x="40" y="40" deletable="false"></block></xml>'),ws);
+freezeFlyoutScale(ws);
+
+window.addEventListener('wheel',function(e){
+  const fl=document.querySelector('.blocklyFlyout');if(!fl)return;
+  const r=fl.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)return;
+  e.preventDefault();e.stopImmediatePropagation();
+  const fly=ws.getFlyout();if(!fly)return;
+  const fw=fly.getWorkspace?fly.getWorkspace():fly.workspace_,cv=fw&&fw.svgBlockCanvas_;if(!cv)return;
+  const t=cv.getAttribute('transform')||'',m=t.match(/translate\s*\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+  cv.setAttribute('transform',`translate(${m?parseFloat(m[1]):0},${Math.min(0,(m?parseFloat(m[2]):0)-e.deltaY)})`);
+},{capture:true,passive:false});
+
+document.getElementById('blocklyDiv').addEventListener('wheel',function(e){
+  const fl=document.querySelector('.blocklyFlyout');
+  if(fl){const r=fl.getBoundingClientRect();if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom)return;}
+  const svg=ws.getParentSvg(),pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;
+  const ctm=svg.getScreenCTM();if(ctm){const sp=pt.matrixTransform(ctm.inverse());ws.zoom(sp.x,sp.y,e.deltaY<0?1:-1);}
+  e.preventDefault();
+},{passive:false});
+
+function resize(){const area=document.getElementById('workspace-container'),div=document.getElementById('blocklyDiv');div.style.left='0';div.style.top='0';div.style.width=area.offsetWidth+'px';div.style.height=area.offsetHeight+'px';Blockly.svgResize(ws);}
+window.addEventListener('resize',resize);resize();
+
+requestAnimationFrame(()=>{resize();Blockly.svgResize(ws);ws.updateToolbox(buildToolboxXml(CHALLENGES[startIdx].blocks));});
+
+document.getElementById('btn-executar').addEventListener('click',()=>doRun(ws));
+document.getElementById('btn-passo').addEventListener('click',()=>doStep(ws));
+document.getElementById('btn-parar').addEventListener('click',doStop);
+
+document.getElementById('btn-baixar').addEventListener('click',()=>{
+  const blob=new Blob([JSON.stringify(Blockly.serialization.workspaces.save(ws),null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='desafio.json';a.click();URL.revokeObjectURL(url);
+});
+const fi=document.getElementById('file-input');
+document.getElementById('btn-carregar').addEventListener('click',()=>fi.click());
+fi.addEventListener('change',function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{Blockly.serialization.workspaces.load(JSON.parse(ev.target.result),ws);setStatus('Carregado!');}catch(e){setStatus('Erro ao carregar');}};r.readAsText(f);this.value='';});
+
+loadChallenge(startIdx);
+</script>
+</body>
+</html>
