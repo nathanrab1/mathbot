@@ -16,6 +16,10 @@
     #header h1 { font-size: 1.15rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
     #header .subtitle { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
     #header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    #challenge-nav { display: flex; align-items: center; gap: 8px; }
+    .btn-nav { font-size: 0.78rem; font-weight: 600; color: #6b7280; padding: 6px 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; cursor: pointer; }
+    .btn-nav:hover:not(:disabled) { background: #e5e7eb; color: #374151; }
+    .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
     #progress-label { font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; }
     .btn-back { font-size: 0.78rem; font-weight: 600; color: #6b7280; text-decoration: none; padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; }
     .btn-back:hover { background: #e5e7eb; }
@@ -45,6 +49,8 @@
     .btn-project:hover:not(:disabled) { background: #e5e7eb; transform: none; box-shadow: none; filter: none; }
     .blocklyFlyout .blocklyScrollbarKnob { fill-opacity: 0.55 !important; }
     .blocklyFlyout .blocklyScrollbarBackground { fill-opacity: 0.18 !important; }
+    .blocklyFlyout { min-width: 200px !important; }
+    .blocklyFlyout .blocklyBlockCanvas { min-width: 180px !important; }
     #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     #modal-overlay.hidden { display: none; }
     #modal-card { background: #fff; border-radius: 20px; padding: 36px 32px 28px; max-width: 480px; width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,0.18); display: flex; flex-direction: column; gap: 14px; animation: modalIn 0.25s ease; }
@@ -74,7 +80,11 @@
     <div class="subtitle">Tutorial</div>
   </div>
   <div id="header-right">
-    <span id="progress-label">Desafio 1 / 5</span>
+    <div id="challenge-nav">
+      <button class="btn-nav" id="btn-prev" title="Desafio anterior">←</button>
+      <span id="progress-label">Desafio 1 / 6</span>
+      <button class="btn-nav" id="btn-next" title="Próximo desafio">→</button>
+    </div>
     <a href="index.html" class="btn-back">← Início</a>
   </div>
 </div>
@@ -129,35 +139,158 @@
 </div>
 
 <script>
-// ── Registrar field_colour ──────────────────────────────────
+// ── Block Definitions + Code Generators ────────────────────
 if (typeof registerFieldColour === 'function') registerFieldColour();
 
-// ── Block Definitions ───────────────────────────────────────
 Blockly.defineBlocksWithJsonArray([
-  { type:'ao_iniciar', message0:'Ao iniciar', nextStatement:null, colour:'#16a34a' },
-  { type:'logo_frente', message0:'Frente %1 passos', args0:[{type:'input_value',name:'PASSOS',check:'Number'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#CC9900' },
-  { type:'logo_mover_esquerda', message0:'← Esquerda %1 passos', args0:[{type:'input_value',name:'PASSOS',check:'Number'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#CC9900' },
-  { type:'logo_mover_baixo', message0:'↓ Baixo %1 passos', args0:[{type:'input_value',name:'PASSOS',check:'Number'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#CC9900' },
-  { type:'logo_esquerda', message0:'↶ Girar esquerda', previousStatement:null, nextStatement:null, colour:'#CC9900' },
-  { type:'logo_direita',  message0:'↷ Girar direita',  previousStatement:null, nextStatement:null, colour:'#CC9900' },
-  { type:'logo_cor', message0:'Pintar %1', args0:[{type:'field_colour',name:'COR',colour:'#4361ee'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#E91E63' },
-  { type:'logo_cor_azul', message0:'Pintar 🔵', previousStatement:null, nextStatement:null, colour:'#E91E63' },
-  { type:'func_definir', message0:'Definir %1', args0:[{type:'field_input',name:'NOME',text:'minha_funcao'}], message1:'%1', args1:[{type:'input_statement',name:'CORPO'}], colour:'#9C27B0' },
-  { type:'func_chamar',  message0:'Chamar %1',  args0:[{type:'field_input',name:'NOME',text:'minha_funcao'}], inputsInline:true, previousStatement:null, nextStatement:null, colour:'#9C27B0' }
+  {
+    type: 'ao_iniciar',
+    message0: 'Ao iniciar',
+    nextStatement: null,
+    colour: '#16a34a',
+    tooltip: 'Ponto de início — conecte os blocos aqui'
+  },
+  {
+    type: 'logo_frente',
+    message0: 'Frente',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para frente'
+  },
+  {
+    type: 'logo_tras',
+    message0: 'Trás',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para trás'
+  },
+  {
+    type: 'logo_mover_direita',
+    message0: '→ Direita',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para a direita'
+  },
+  {
+    type: 'logo_mover_esquerda',
+    message0: '← Esquerda',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para a esquerda'
+  },
+  {
+    type: 'logo_mover_cima',
+    message0: '↑ Cima',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para cima'
+  },
+  {
+    type: 'logo_mover_baixo',
+    message0: '↓ Baixo',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para baixo'
+  },
+  {
+    type: 'logo_esquerda',
+    message0: '↶ Girar esquerda',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Gira 90° para a esquerda'
+  },
+  {
+    type: 'logo_direita',
+    message0: '↷ Girar direita',
+    previousStatement: null, nextStatement: null,
+    colour: '#CC9900',
+    tooltip: 'Gira 90° para a direita'
+  },
+  {
+    type: 'logo_cor',
+    message0: 'Pintar %1',
+    args0: [{ type: 'field_colour', name: 'COR', colour: '#4361ee' }],
+    inputsInline: true,
+    previousStatement: null, nextStatement: null,
+    colour: '#E91E63',
+    tooltip: 'Pinta a célula com a cor escolhida'
+  },
+  {
+    type: 'logo_cor_azul',
+    message0: 'Pintar 🔵',
+    previousStatement: null, nextStatement: null,
+    colour: '#E91E63',
+    tooltip: 'Pinta a célula com azul'
+  },
+  {
+    type: 'func_definir',
+    message0: 'Definir %1',
+    args0: [{ type: 'field_input', name: 'NOME', text: 'minha_funcao' }],
+    message1: '%1',
+    args1: [{ type: 'input_statement', name: 'CORPO' }],
+    colour: '#9C27B0',
+    tooltip: 'Define uma função reutilizável'
+  },
+  {
+    type: 'func_chamar',
+    message0: 'Chamar %1',
+    args0: [{ type: 'field_input', name: 'NOME', text: 'minha_funcao' }],
+    inputsInline: true,
+    previousStatement: null, nextStatement: null,
+    colour: '#9C27B0',
+    tooltip: 'Executa uma função pelo nome'
+  }
 ]);
-(function(){const o=Blockly.Blocks['controls_repeat_ext'].init;Blockly.Blocks['controls_repeat_ext'].init=function(){o.call(this);this.setColour('#2563eb');};})();
 
-const Order=javascript.Order, gen=Blockly.JavaScript;
-gen.forBlock['ao_iniciar']       = ()=>'';
-gen.forBlock['logo_frente']      = (b,g)=>`commands.push({t:'f',n:${g.valueToCode(b,'PASSOS',Order.ATOMIC)||'1'}});\n`;
-gen.forBlock['logo_mover_esquerda']=(b,g)=>`commands.push({t:'ld',n:${g.valueToCode(b,'PASSOS',Order.ATOMIC)||'1'}});\n`;
-gen.forBlock['logo_mover_baixo'] = (b,g)=>`commands.push({t:'dd',n:${g.valueToCode(b,'PASSOS',Order.ATOMIC)||'1'}});\n`;
-gen.forBlock['logo_esquerda']    = ()=>`commands.push({t:'l',n:90});\n`;
-gen.forBlock['logo_direita']     = ()=>`commands.push({t:'r',n:90});\n`;
-gen.forBlock['logo_cor']         = (b)=>`commands.push({t:'cor',cor:'${b.getFieldValue('COR')}'});\n`;
-gen.forBlock['logo_cor_azul']    = ()=>`commands.push({t:'cor',cor:'#2563eb'});\n`;
-gen.forBlock['func_definir']     = (b,g)=>`funcoes[${JSON.stringify(b.getFieldValue('NOME')||'f')}]=function(){\n${g.statementToCode(b,'CORPO')}};\n`;
-gen.forBlock['func_chamar']      = (b)=>{const n=JSON.stringify(b.getFieldValue('NOME')||'f');return `if(funcoes[${n}])funcoes[${n}]();\n`;};
+(function () {
+  const _orig = Blockly.Blocks['controls_repeat_ext'].init;
+  Blockly.Blocks['controls_repeat_ext'].init = function () {
+    _orig.call(this);
+    this.setColour('#2563eb');
+  };
+})();
+
+// ── Code Generators ─────────────────────────────────────────
+const gen   = Blockly.JavaScript;
+const Order = javascript.Order;
+
+gen.forBlock['ao_iniciar'] = function () { return ''; };
+gen.forBlock['logo_frente'] = function (block, g) {
+  return `commands.push({t:'f',n:1});\n`;
+};
+gen.forBlock['logo_tras'] = function (block, g) {
+  return `commands.push({t:'b',n:1});\n`;
+};
+gen.forBlock['logo_mover_direita'] = function (block, g) {
+  return `commands.push({t:'rd',n:1});\n`;
+};
+gen.forBlock['logo_mover_esquerda'] = function (block, g) {
+  return `commands.push({t:'ld',n:1});\n`;
+};
+gen.forBlock['logo_mover_cima'] = function (block, g) {
+  return `commands.push({t:'ud',n:1});\n`;
+};
+gen.forBlock['logo_mover_baixo'] = function (block, g) {
+  return `commands.push({t:'dd',n:1});\n`;
+};
+gen.forBlock['logo_esquerda'] = function () { return `commands.push({t:'l',n:90});\n`; };
+gen.forBlock['logo_direita']  = function () { return `commands.push({t:'r',n:90});\n`; };
+gen.forBlock['logo_cor'] = function (block) {
+  const cor = block.getFieldValue('COR');
+  return `commands.push({t:'cor',cor:'${cor}'});\n`;
+};
+gen.forBlock['logo_cor_azul'] = function () {
+  return `commands.push({t:'cor',cor:'#2563eb'});\n`;
+};
+gen.forBlock['func_definir'] = function (block, g) {
+  const nome  = JSON.stringify(block.getFieldValue('NOME') || 'funcao');
+  const corpo = g.statementToCode(block, 'CORPO');
+  return `funcoes[${nome}] = function() {\n${corpo}};\n`;
+};
+gen.forBlock['func_chamar'] = function (block) {
+  const nome = JSON.stringify(block.getFieldValue('NOME') || 'funcao');
+  return `if(funcoes[${nome}]) funcoes[${nome}]();\n`;
+};
 
 // ── Turtle Engine ────────────────────────────────────────────
 const CELL=40;
@@ -235,7 +368,7 @@ function buildCommands(ws){
   const cmds=[];try{new Function('commands',full)(cmds);}catch(e){setStatus('Erro: '+e.message);console.error(e);}
   return cmds;
 }
-function _done(msg){clearTimeout(_timer);_mode='idle';_commands=[];_cmdIndex=0;syncButtons();setStatus(msg);if(_onComplete&&msg.startsWith('Concluído'))_onComplete();}
+function _done(msg){console.log('_done chamado com msg:', msg, '_onComplete:', !!_onComplete);clearTimeout(_timer);_mode='idle';_commands=[];_cmdIndex=0;syncButtons();setStatus(msg);if(_onComplete&&msg.startsWith('Concluído')){console.log('Chamando _onComplete');_onComplete();}}
 function _tick(ws){if(_mode!=='running')return;applyCmd(_commands[_cmdIndex]);_cmdIndex++;setStatus('Executando…  '+_cmdIndex+' / '+_commands.length);if(_cmdIndex<_commands.length){_timer=setTimeout(()=>_tick(ws),getDelay());}else{_done('Concluído ('+_commands.length+' passos)');}}
 function doRun(ws){turtle=makeTurtle(_startR,_startC);render();_commands=buildCommands(ws);if(!_commands.length)return;_cmdIndex=0;_mode='running';syncButtons();setStatus('Executando…  0 / '+_commands.length);_tick(ws);}
 function doStep(ws){if(_mode==='idle'){turtle=makeTurtle(_startR,_startC);render();_commands=buildCommands(ws);if(!_commands.length)return;_cmdIndex=0;_mode='stepping';syncButtons();}if(_cmdIndex>=_commands.length){_done('Concluído');return;}applyCmd(_commands[_cmdIndex]);_cmdIndex++;setStatus('Passo '+_cmdIndex+' / '+_commands.length);if(_cmdIndex>=_commands.length)_done('Concluído ('+_commands.length+' passos)');}
@@ -244,17 +377,18 @@ function doStop(){clearTimeout(_timer);_done('Parado no passo '+_cmdIndex);}
 // ── Challenges ───────────────────────────────────────────────
 const CHALLENGES=[
   {id:1,title:'Chegue ao objetivo!',description:'A tartaruga precisa chegar até o bloco verde no final da linha. Use o bloco Frente para avançar!',tip:'Cada Frente avança 1 passo. Quantos passos até o bloco verde?',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente'],preDrawn:{'0,7':'#22c55e'},validate(){return cellKey(turtle.x,turtle.y)==='0,7';},successMsg:'Você chegou ao objetivo! Aprendeu a mover a tartaruga com precisão.'},
-  {id:2,title:'Pinte a linha!',description:'Pinte todos os 8 blocos da linha de azul. Use Pintar para colorir a célula e Frente para avançar.',tip:'Pinte a célula atual, avance, pinte a próxima... repita para todos os 8 blocos!',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente','logo_cor_azul'],preDrawn:{},validate(){for(let c=0;c<8;c++)if(!turtle.painted['0,'+c])return false;return true;},successMsg:'Incrível! Você pintou a linha inteira — mas foi bem trabalhoso, né? Há uma forma melhor...'},
+  {id:2,title:'Pinte a linha!',description:'Pinte todos os 8 blocos da linha de azul. Use Pintar para colorir a célula e Frente para avançar.',tip:'Pinte a célula atual, avance, pinte a próxima... repita para todos os 8 blocos!',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente','logo_cor_azul'],preDrawn:{},validate(){console.log('Validando desafio 2, turtle.painted:', turtle.painted);for(let c=0;c<8;c++){if(!turtle.painted['0,'+c]){console.log('Falta pintar coluna:', c);return false;}}console.log('Desafio 2 completo!');return true;},successMsg:'Incrível! Você pintou a linha inteira — mas foi bem trabalhoso, né? Há uma forma melhor...'},
   {id:3,title:'Use o Repita!',description:'Pinte a linha de azul novamente — mas desta vez use o bloco Repita para simplificar o código.',tip:'Coloque Pintar + Frente dentro do Repita. Quantas vezes você precisa repetir?',grid:{cols:8,rows:1},startPos:{row:0,col:0},blocks:['logo_frente','logo_cor_azul','controls_repeat_ext'],preDrawn:{},validate(){for(let c=0;c<8;c++)if(!turtle.painted['0,'+c])return false;return true;},successMsg:'Perfeito! O bloco Repita deixou o código muito menor e mais elegante!'},
-  {id:4,title:'Crie uma função!',description:'Pinte as duas linhas do grid. Defina uma função que pinte uma linha inteira e chame-a duas vezes — uma por linha!',tip:'Defina uma função com Repita 4×(Pintar + Frente). Depois navegue até a próxima linha e chame a função de novo.',grid:{cols:4,rows:2},startPos:{row:0,col:0},blocks:['logo_frente','logo_mover_baixo','logo_mover_esquerda','logo_cor_azul','func_definir','func_chamar','controls_repeat_ext'],preDrawn:{},validate(){for(let r=0;r<2;r++)for(let c=0;c<4;c++)if(!turtle.painted[r+','+c])return false;return true;},successMsg:'Excelente! Funções permitem reutilizar código — defina uma vez, use quantas quiser!'},
-  {id:5,title:'Desenhe um quadrado!',description:'Pinte o perímetro do quadrado marcado na malha. Use Frente, Girar e Repita para traçar os 4 lados.',tip:'Tente: Repita 4 vezes — Repita 2×(Pintar + Frente), depois Girar direita.',grid:{cols:8,rows:8},startPos:{row:2,col:2},blocks:['logo_frente','logo_esquerda','logo_direita','logo_cor','controls_repeat_ext'],preDrawn:{'2,2':'#e0e0e0','2,3':'#e0e0e0','2,4':'#e0e0e0','3,4':'#e0e0e0','4,4':'#e0e0e0','4,3':'#e0e0e0','4,2':'#e0e0e0','3,2':'#e0e0e0'},validate(){return['2,2','2,3','2,4','3,4','4,4','4,3','4,2','3,2'].every(k=>turtle.painted[k]);},successMsg:'Fantástico! Você desenhou um quadrado usando código. Você é um(a) programador(a)!'}
+  {id:4,title:'Crie uma função!',description:'Pinte as duas linhas do grid. Defina uma função que pinte uma linha inteira e chame-a duas vezes — uma por linha!',tip:'Defina uma função com Repita 4×(Pintar + Frente). Depois navegue até a próxima linha e chame a função de novo.',grid:{cols:4,rows:2},startPos:{row:0,col:0},blocks:['logo_frente','logo_esquerda','logo_direita','logo_cor_azul','func_definir','func_chamar','controls_repeat_ext'],preDrawn:{},validate(){for(let r=0;r<2;r++)for(let c=0;c<4;c++)if(!turtle.painted[r+','+c])return false;return true;},successMsg:'Excelente! Funções permitem reutilizar código — defina uma vez, use quantas quiser!'},
+  {id:5,title:'Desenhe um quadrado!',description:'Pinte o perímetro do quadrado marcado na malha. Use Frente, Girar e Repita para traçar os 4 lados.',tip:'Tente: Repita 4 vezes — Repita 2×(Pintar + Frente), depois Girar direita.',grid:{cols:8,rows:8},startPos:{row:2,col:2},blocks:['logo_frente','logo_esquerda','logo_direita','logo_cor','func_definir','func_chamar','controls_repeat_ext'],preDrawn:{'2,2':'#e0e0e0','2,3':'#e0e0e0','2,4':'#e0e0e0','3,4':'#e0e0e0','4,4':'#e0e0e0','4,3':'#e0e0e0','4,2':'#e0e0e0','3,2':'#e0e0e0'},validate(){return['2,2','2,3','2,4','3,4','4,4','4,3','4,2','3,2'].every(k=>turtle.painted[k]);},successMsg:'Fantástico! Você desenhou um quadrado usando código. Você é um(a) programador(a)!'},
+  {id:6,title:'Mude os olhos!',description:'O personagem tem olhos pretos. Mude os 2 blocos pretos para azul!',tip:'Navegue até cada olho preto e pinte de azul. Use os blocos de movimento e girar para chegar lá!',grid:{cols:8,rows:9},startPos:{row:0,col:0},blocks:['logo_frente','logo_tras','logo_mover_direita','logo_mover_esquerda','logo_mover_cima','logo_mover_baixo','logo_esquerda','logo_direita','logo_cor','controls_repeat_ext'],preDrawn:{'1,2':'#dc2626','1,3':'#dc2626','1,4':'#dc2626','1,5':'#dc2626','2,2':'#dc2626','2,3':'#dc2626','2,4':'#dc2626','2,6':'#dc2626','3,2':'#fef08a','3,3':'#000000','3,4':'#fef08a','3,5':'#000000','4,2':'#fef08a','4,3':'#fef08a','4,4':'#fef08a','4,5':'#fef08a','5,1':'#dc2626','5,2':'#2563eb','5,3':'#dc2626','5,4':'#dc2626','5,5':'#2563eb','5,6':'#dc2626','6,1':'#fef08a','6,2':'#2563eb','6,3':'#2563eb','6,4':'#2563eb','6,5':'#2563eb','6,6':'#fef08a','7,2':'#2563eb','7,3':'#2563eb','7,4':'#2563eb','7,5':'#2563eb','8,2':'#22c55e','8,5':'#22c55e'},validate(){console.log('Validando desafio 6, turtle.painted:', turtle.painted);return turtle.painted['3,3']&&turtle.painted['3,5'];},successMsg:'Perfeito! Você mudou os olhos de preto para azul! Usou bem os comandos de navegação!'}
 ];
 
 // ── Toolbox builder ──────────────────────────────────────────
 const BLOCK_XML={
-  logo_frente:`<block type="logo_frente"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
-  logo_mover_esquerda:`<block type="logo_mover_esquerda"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
-  logo_mover_baixo:`<block type="logo_mover_baixo"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
+  logo_frente:`<block type="logo_frente"></block>`,
+  logo_mover_esquerda:`<block type="logo_mover_esquerda"></block>`,
+  logo_mover_baixo:`<block type="logo_mover_baixo"></block>`,
   logo_esquerda:`<block type="logo_esquerda"></block>`,
   logo_direita:`<block type="logo_direita"></block>`,
   logo_cor:`<block type="logo_cor"></block>`,
@@ -271,13 +405,14 @@ function freezeFlyoutScale(ws){
   ws.setScale=function(s){orig.call(this,s);const fly=this.getFlyout&&this.getFlyout(),fw=fly&&(fly.getWorkspace?fly.getWorkspace():fly.workspace_);if(!fw||fw.scale===1)return;fw.scale=1;const cv=fw.svgBlockCanvas_;if(cv){const t=cv.getAttribute('transform')||'';cv.setAttribute('transform',t.replace(/scale\s*\([^)]+\)/g,'').trim());}};
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
     const fly=ws.getFlyout(),flyEl=document.querySelector('.blocklyFlyout'),cv=flyEl&&flyEl.querySelector('.blocklyBlockCanvas');
-    if(fly){const grp=fly.svgGroup_,baseW=(typeof fly.width_==='number'&&fly.width_>0)?fly.width_:(grp&&parseFloat(grp.getAttribute('width')))||0;if(baseW>0){try{Object.defineProperty(fly,'width_',{get:()=>baseW,set:()=>{},configurable:true});}catch(e){}}}
+    if(fly){const grp=fly.svgGroup_,baseW=Math.max(200,(typeof fly.width_==='number'&&fly.width_>0)?fly.width_:(grp&&parseFloat(grp.getAttribute('width')))||0);if(baseW>0){try{Object.defineProperty(fly,'width_',{get:()=>baseW,set:()=>{},configurable:true});}catch(e){}}}
     if(!cv)return;let busy=false;new MutationObserver(()=>{if(busy)return;const t=cv.getAttribute('transform')||'',f=t.replace(/scale\s*\([^)]+\)/g,'').trim();if(f!==t){busy=true;cv.setAttribute('transform',f);busy=false;}}).observe(cv,{attributes:true,attributeFilter:['transform']});
   }));
 }
 
 // ── Modal ────────────────────────────────────────────────────
 function showModal({progress,title,description,tip,primaryLabel,primaryAction,secondaryLabel,secondaryHref}){
+  console.log('showModal chamado:', {progress, title, primaryLabel});
   document.getElementById('modal-progress').textContent=progress;
   document.getElementById('modal-title').textContent=title;
   document.getElementById('modal-description').textContent=description;
@@ -293,11 +428,17 @@ function closeModal(){document.getElementById('modal-overlay').classList.add('hi
 
 // ── Challenge loader ─────────────────────────────────────────
 let currentIdx=0,ws;
+function updateNavButtons(){
+  document.getElementById('btn-prev').disabled=currentIdx<=0;
+  document.getElementById('btn-next').disabled=currentIdx>=CHALLENGES.length-1;
+}
 function loadChallenge(idx){
+  console.log('loadChallenge chamado com índice:', idx);
   currentIdx=idx;
   const ch=CHALLENGES[idx];
-  localStorage.setItem('tutorialProgress',idx);
+  console.log('Carregando desafio:', ch.title);
   document.getElementById('progress-label').textContent='Desafio '+(idx+1)+' / '+CHALLENGES.length;
+  updateNavButtons();
   initGrid(ch.grid.cols,ch.grid.rows);
   setPreDrawn(ch.preDrawn);
   _startR=ch.startPos.row;_startC=ch.startPos.col;
@@ -312,14 +453,15 @@ function loadChallenge(idx){
   showModal({progress:'Desafio '+(idx+1)+' de '+CHALLENGES.length,title:ch.title,description:ch.description,tip:ch.tip,primaryLabel:idx===0?'Vamos lá! 🚀':'Começar desafio!',primaryAction:closeModal,secondaryLabel:'← Início',secondaryHref:'index.html'});
 }
 function showSuccessModal(ch){
-  const isLast=currentIdx>=CHALLENGES.length-1;
-  showModal({progress:'Desafio '+(currentIdx+1)+' de '+CHALLENGES.length,title:'🎉 Parabéns!',description:ch.successMsg,tip:'',primaryLabel:isLast?'🏁 Voltar ao início':'Próximo desafio →',primaryAction:isLast?()=>{window.location.href='index.html';}:()=>loadChallenge(currentIdx+1),secondaryLabel:'← Início',secondaryHref:'index.html'});
+  console.log('showSuccessModal chamado para desafio:', currentIdx+1);
+  const completedIdx=currentIdx; // Captura o índice do desafio que acabou de completar
+  const nextIdx=completedIdx+1; // Próximo desafio
+  const isLast=completedIdx>=CHALLENGES.length-1;
+  showModal({progress:'Desafio '+(completedIdx+1)+' de '+CHALLENGES.length,title:'🎉 Parabéns!',description:ch.successMsg,tip:'',primaryLabel:isLast?'🏁 Voltar ao início':'Próximo desafio →',primaryAction:isLast?()=>{window.location.href='index.html';}:()=>{console.log('Clicou em Próximo, indo para índice:', nextIdx);loadChallenge(nextIdx);},secondaryLabel:'← Início',secondaryHref:'index.html'});
 }
 
 // ── Init ─────────────────────────────────────────────────────
-const params=new URLSearchParams(window.location.search);
-const saved=parseInt(localStorage.getItem('tutorialProgress')||'0',10);
-const startIdx=Math.max(0,Math.min(CHALLENGES.length-1,parseInt(params.get('c')??saved,10)));
+const startIdx=0; // Sempre começa no primeiro desafio
 
 initGrid(CHALLENGES[startIdx].grid.cols,CHALLENGES[startIdx].grid.rows);
 
@@ -358,6 +500,13 @@ requestAnimationFrame(()=>{resize();Blockly.svgResize(ws);ws.updateToolbox(build
 document.getElementById('btn-executar').addEventListener('click',()=>doRun(ws));
 document.getElementById('btn-passo').addEventListener('click',()=>doStep(ws));
 document.getElementById('btn-parar').addEventListener('click',doStop);
+
+document.getElementById('btn-prev').addEventListener('click',()=>{
+  if(currentIdx>0)loadChallenge(currentIdx-1);
+});
+document.getElementById('btn-next').addEventListener('click',()=>{
+  if(currentIdx<CHALLENGES.length-1)loadChallenge(currentIdx+1);
+});
 
 document.getElementById('btn-baixar').addEventListener('click',()=>{
   const blob=new Blob([JSON.stringify(Blockly.serialization.workspaces.save(ws),null,2)],{type:'application/json'});

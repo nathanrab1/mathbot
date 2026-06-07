@@ -13,51 +13,45 @@ Blockly.defineBlocksWithJsonArray([
   },
   {
     type: 'logo_frente',
-    message0: 'Frente %1 passos',
-    args0: [{ type: 'input_value', name: 'PASSOS', check: 'Number' }],
-    inputsInline: true,
+    message0: 'Frente',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900'
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para frente'
   },
   {
     type: 'logo_tras',
-    message0: 'Trás %1 passos',
-    args0: [{ type: 'input_value', name: 'PASSOS', check: 'Number' }],
-    inputsInline: true,
+    message0: 'Trás',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900'
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para trás'
   },
   {
     type: 'logo_mover_direita',
-    message0: '→ Direita %1 passos',
-    args0: [{ type: 'input_value', name: 'PASSOS', check: 'Number' }],
-    inputsInline: true,
+    message0: '→ Direita',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900'
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para a direita'
   },
   {
     type: 'logo_mover_esquerda',
-    message0: '← Esquerda %1 passos',
-    args0: [{ type: 'input_value', name: 'PASSOS', check: 'Number' }],
-    inputsInline: true,
+    message0: '← Esquerda',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900'
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para a esquerda'
   },
   {
     type: 'logo_mover_cima',
-    message0: '↑ Cima %1 passos',
-    args0: [{ type: 'input_value', name: 'PASSOS', check: 'Number' }],
-    inputsInline: true,
+    message0: '↑ Cima',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900'
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para cima'
   },
   {
     type: 'logo_mover_baixo',
-    message0: '↓ Baixo %1 passos',
-    args0: [{ type: 'input_value', name: 'PASSOS', check: 'Number' }],
-    inputsInline: true,
+    message0: '↓ Baixo',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900'
+    colour: '#CC9900',
+    tooltip: 'Move 1 passo para baixo'
   },
   {
     type: 'logo_esquerda',
@@ -126,28 +120,22 @@ const Order = javascript.Order;
 gen.forBlock['ao_iniciar'] = function () { return ''; };
 
 gen.forBlock['logo_frente'] = function (block, g) {
-  const n = g.valueToCode(block, 'PASSOS', Order.ATOMIC) || '1';
-  return `commands.push({t:'f',n:${n}});\n`;
+  return `commands.push({t:'f',n:1});\n`;
 };
 gen.forBlock['logo_tras'] = function (block, g) {
-  const n = g.valueToCode(block, 'PASSOS', Order.ATOMIC) || '1';
-  return `commands.push({t:'b',n:${n}});\n`;
+  return `commands.push({t:'b',n:1});\n`;
 };
 gen.forBlock['logo_mover_direita'] = function (block, g) {
-  const n = g.valueToCode(block, 'PASSOS', Order.ATOMIC) || '1';
-  return `commands.push({t:'rd',n:${n}});\n`;
+  return `commands.push({t:'rd',n:1});\n`;
 };
 gen.forBlock['logo_mover_esquerda'] = function (block, g) {
-  const n = g.valueToCode(block, 'PASSOS', Order.ATOMIC) || '1';
-  return `commands.push({t:'ld',n:${n}});\n`;
+  return `commands.push({t:'ld',n:1});\n`;
 };
 gen.forBlock['logo_mover_cima'] = function (block, g) {
-  const n = g.valueToCode(block, 'PASSOS', Order.ATOMIC) || '1';
-  return `commands.push({t:'ud',n:${n}});\n`;
+  return `commands.push({t:'ud',n:1});\n`;
 };
 gen.forBlock['logo_mover_baixo'] = function (block, g) {
-  const n = g.valueToCode(block, 'PASSOS', Order.ATOMIC) || '1';
-  return `commands.push({t:'dd',n:${n}});\n`;
+  return `commands.push({t:'dd',n:1});\n`;
 };
 gen.forBlock['logo_esquerda'] = function () { return `commands.push({t:'l',n:90});\n`; };
 gen.forBlock['logo_direita']  = function () { return `commands.push({t:'r',n:90});\n`; };
