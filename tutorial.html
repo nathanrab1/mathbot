@@ -85,7 +85,7 @@
       <span id="progress-label">Desafio 1 / 6</span>
       <button class="btn-nav" id="btn-next" title="Próximo desafio">→</button>
     </div>
-    <a href="index.html" class="btn-back">← Início</a>
+    <a href="index.html" class="btn-back">Início</a>
   </div>
 </div>
 
@@ -450,7 +450,7 @@ function loadChallenge(idx){
     ws.getAllBlocks().filter(b=>b.type!=='ao_iniciar').forEach(b=>b.dispose());
     requestAnimationFrame(()=>{Blockly.svgResize(ws);ws.updateToolbox(xml);});
   }
-  showModal({progress:'Desafio '+(idx+1)+' de '+CHALLENGES.length,title:ch.title,description:ch.description,tip:ch.tip,primaryLabel:idx===0?'Vamos lá! 🚀':'Começar desafio!',primaryAction:closeModal,secondaryLabel:'← Início',secondaryHref:'index.html'});
+  showModal({progress:'Desafio '+(idx+1)+' de '+CHALLENGES.length,title:ch.title,description:ch.description,tip:ch.tip,primaryLabel:idx===0?'Vamos lá! 🚀':'Começar desafio!',primaryAction:closeModal,secondaryLabel:'Início',secondaryHref:'index.html'});
 }
 function showSuccessModal(ch){
   console.log('showSuccessModal chamado para desafio:', currentIdx+1);
