@@ -21,7 +21,7 @@
     #main { display: flex; flex: 1; overflow: hidden; }
     #workspace-container { flex: 1; position: relative; min-width: 0; }
     #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-    #right-panel { width: 377px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; border-left: 1px solid #e5e7eb; overflow-y: auto; box-shadow: -2px 0 10px rgba(0,0,0,0.04); min-width: 250px; max-width: 600px; }
+    #right-panel { width: 377px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; border-left: 1px solid #e5e7eb; overflow-y: auto; box-shadow: -2px 0 10px rgba(0,0,0,0.04); min-width: 250px; max-width: 750px; }
     #resize-handle { width: 8px; background: transparent; cursor: ew-resize; position: relative; flex-shrink: 0; transition: background 0.2s; }
     #resize-handle:hover { background: rgba(37, 99, 235, 0.1); }
     #resize-handle::after { content: ''; position: absolute; left: 3px; top: 50%; transform: translateY(-50%); width: 2px; height: 40px; background: #e5e7eb; border-radius: 1px; }
@@ -76,7 +76,7 @@
   <div id="resize-handle"></div>
   <div id="right-panel">
     <div class="r-section">
-      <div class="panel-label">Tela da Tartaruga — 8 × 8</div>
+      <div class="panel-label" id="grid-label">Tela da Tartaruga — 8 × 8</div>
       <canvas id="turtle-canvas" width="340" height="340"></canvas>
     </div>
     <div class="r-section">
@@ -320,12 +320,12 @@ function render(){
   ctx.font='bold 11px system-ui, -apple-system, sans-serif';
   ctx.textAlign='center';
   ctx.textBaseline='middle';
-  // Letras A-H no topo
-  const letters='ABCDEFGH';
+  // Letras A-P no topo (dependendo do tamanho da grade)
+  const letters='ABCDEFGHIJKLMNOP';
   for(let c=0;c<GRID_COLS;c++){
     ctx.fillText(letters[c],c*CELL+CELL/2+ox,oy-10);
   }
-  // Números 1-8 à esquerda
+  // Números à esquerda
   ctx.textAlign='right';
   for(let r=0;r<GRID_ROWS;r++){
     ctx.fillText((r+1),ox-8,r*CELL+CELL/2+oy);
@@ -465,6 +465,21 @@ document.addEventListener('mouseup',()=>{
     document.body.style.userSelect='';
   }
 });
+
+// ── Read grid size from URL ─────────────────────────────────
+const urlParams=new URLSearchParams(window.location.search);
+const gridSize=parseInt(urlParams.get('size')||'8',10);
+if([8,10,12,16].includes(gridSize)){
+  initGrid(gridSize,gridSize);
+  document.getElementById('grid-label').textContent=`Tela da Tartaruga — ${gridSize} × ${gridSize}`;
+  // Ajustar tamanho do painel para grids maiores
+  const rightPanel=document.getElementById('right-panel');
+  if(gridSize===16){
+    rightPanel.style.width='500px';
+  }else if(gridSize===12){
+    rightPanel.style.width='440px';
+  }
+}
 
 turtle=makeTurtle(0,0);render();syncButtons();
 
