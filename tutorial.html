@@ -497,7 +497,15 @@ document.getElementById('blocklyDiv').addEventListener('wheel',function(e){
 function resize(){const area=document.getElementById('workspace-container'),div=document.getElementById('blocklyDiv');div.style.left='0';div.style.top='0';div.style.width=area.offsetWidth+'px';div.style.height=area.offsetHeight+'px';Blockly.svgResize(ws);}
 window.addEventListener('resize',resize);resize();
 
-requestAnimationFrame(()=>{resize();Blockly.svgResize(ws);ws.updateToolbox(buildToolboxXml(CHALLENGES[startIdx].blocks));});
+requestAnimationFrame(()=>{
+  resize();
+  Blockly.svgResize(ws);
+  ws.updateToolbox(buildToolboxXml(CHALLENGES[startIdx].blocks));
+  // Aguarda mais um frame para garantir que tudo foi renderizado
+  requestAnimationFrame(()=>{
+    loadChallenge(startIdx);
+  });
+});
 
 document.getElementById('btn-executar').addEventListener('click',()=>doRun(ws));
 document.getElementById('btn-passo').addEventListener('click',()=>doStep(ws));
@@ -518,7 +526,6 @@ const fi=document.getElementById('file-input');
 document.getElementById('btn-carregar').addEventListener('click',()=>fi.click());
 fi.addEventListener('change',function(){const f=this.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{Blockly.serialization.workspaces.load(JSON.parse(ev.target.result),ws);setStatus('Carregado!');}catch(e){setStatus('Erro ao carregar');}};r.readAsText(f);this.value='';});
 
-loadChallenge(startIdx);
 </script>
 </body>
 </html>
