@@ -21,7 +21,10 @@
     #main { display: flex; flex: 1; overflow: hidden; }
     #workspace-container { flex: 1; position: relative; min-width: 0; }
     #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
-    #right-panel { width: 290px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; border-left: 1px solid #e5e7eb; overflow-y: auto; box-shadow: -2px 0 10px rgba(0,0,0,0.04); }
+    #right-panel { width: 377px; flex-shrink: 0; background: #fff; display: flex; flex-direction: column; align-items: stretch; padding: 14px; gap: 10px; border-left: 1px solid #e5e7eb; overflow-y: auto; box-shadow: -2px 0 10px rgba(0,0,0,0.04); min-width: 250px; max-width: 600px; }
+    #resize-handle { width: 8px; background: transparent; cursor: ew-resize; position: relative; flex-shrink: 0; transition: background 0.2s; }
+    #resize-handle:hover { background: rgba(37, 99, 235, 0.1); }
+    #resize-handle::after { content: ''; position: absolute; left: 3px; top: 50%; transform: translateY(-50%); width: 2px; height: 40px; background: #e5e7eb; border-radius: 1px; }
     .r-section { background: #f8f9fb; border-radius: 12px; padding: 12px; border: 1px solid #e5e7eb; display: flex; flex-direction: column; gap: 8px; }
     .panel-label { font-size: 0.62rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
     #turtle-canvas { display: block; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; width: 100%; height: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
@@ -70,10 +73,11 @@
   <div id="workspace-container">
     <div id="blocklyDiv"></div>
   </div>
+  <div id="resize-handle"></div>
   <div id="right-panel">
     <div class="r-section">
       <div class="panel-label">Tela da Tartaruga — 8 × 8</div>
-      <canvas id="turtle-canvas" width="320" height="320"></canvas>
+      <canvas id="turtle-canvas" width="340" height="340"></canvas>
     </div>
     <div class="r-section">
       <div id="controls">
@@ -279,34 +283,53 @@ gen.forBlock['func_chamar'] = function (block) {
 
 // ── Turtle Engine ────────────────────────────────────────────
 const CELL=40;
-let GRID_COLS=8, GRID_ROWS=8, CANVAS_W=320, CANVAS_H=320;
-let GRID_MIN_X=20, GRID_MAX_X=300, GRID_MIN_Y=20, GRID_MAX_Y=300;
+const LABEL_PADDING=20; // Espaço para labels
+let GRID_COLS=8, GRID_ROWS=8, CANVAS_W=340, CANVAS_H=340;
+let GRID_MIN_X=40, GRID_MAX_X=320, GRID_MIN_Y=40, GRID_MAX_Y=320;
 let preDrawnCells={};
 
 function initGrid(cols,rows){
   GRID_COLS=cols; GRID_ROWS=rows;
-  CANVAS_W=cols*CELL; CANVAS_H=rows*CELL;
-  GRID_MIN_X=CELL/2; GRID_MAX_X=(cols-1)*CELL+CELL/2;
-  GRID_MIN_Y=CELL/2; GRID_MAX_Y=(rows-1)*CELL+CELL/2;
+  CANVAS_W=cols*CELL+LABEL_PADDING; CANVAS_H=rows*CELL+LABEL_PADDING;
+  GRID_MIN_X=CELL/2+LABEL_PADDING; GRID_MAX_X=(cols-1)*CELL+CELL/2+LABEL_PADDING;
+  GRID_MIN_Y=CELL/2+LABEL_PADDING; GRID_MAX_Y=(rows-1)*CELL+CELL/2+LABEL_PADDING;
   const cv=document.getElementById('turtle-canvas');
   if(cv){cv.width=CANVAS_W;cv.height=CANVAS_H;}
 }
 function setPreDrawn(cells){preDrawnCells=cells||{};}
-function cellKey(cx,cy){return Math.round((cy-CELL/2)/CELL)+','+Math.round((cx-CELL/2)/CELL);}
-function makeTurtle(r=0,c=0){return{x:c*CELL+CELL/2,y:r*CELL+CELL/2,angle:90,penColor:'#e74c3c',painted:{}};}
+function cellKey(cx,cy){return Math.round((cy-CELL/2-LABEL_PADDING)/CELL)+','+Math.round((cx-CELL/2-LABEL_PADDING)/CELL);}
+function makeTurtle(r=0,c=0){return{x:c*CELL+CELL/2+LABEL_PADDING,y:r*CELL+CELL/2+LABEL_PADDING,angle:90,penColor:'#e74c3c',painted:{}};}
 let turtle=makeTurtle();
 function paintCurrentCell(){turtle.painted[cellKey(turtle.x,turtle.y)]=turtle.penColor;}
 
 function render(){
   const cv=document.getElementById('turtle-canvas'); if(!cv)return;
   const ctx=cv.getContext('2d');
+  const ox=LABEL_PADDING,oy=LABEL_PADDING; // offset para labels
   ctx.clearRect(0,0,CANVAS_W,CANVAS_H);
-  for(let r=0;r<GRID_ROWS;r++) for(let c=0;c<GRID_COLS;c++){ctx.fillStyle=(r+c)%2===0?'#f8f9fb':'#fff';ctx.fillRect(c*CELL,r*CELL,CELL,CELL);}
-  for(const[k,col]of Object.entries(preDrawnCells)){const[r,c]=k.split(',').map(Number);ctx.fillStyle=col;ctx.fillRect(c*CELL,r*CELL,CELL,CELL);}
-  for(const[k,col]of Object.entries(turtle.painted)){const[r,c]=k.split(',').map(Number);ctx.fillStyle=col;ctx.fillRect(c*CELL,r*CELL,CELL,CELL);}
+  for(let r=0;r<GRID_ROWS;r++) for(let c=0;c<GRID_COLS;c++){ctx.fillStyle=(r+c)%2===0?'#f8f9fb':'#fff';ctx.fillRect(c*CELL+ox,r*CELL+oy,CELL,CELL);}
+  for(const[k,col]of Object.entries(preDrawnCells)){const[r,c]=k.split(',').map(Number);ctx.fillStyle=col;ctx.fillRect(c*CELL+ox,r*CELL+oy,CELL,CELL);}
+  for(const[k,col]of Object.entries(turtle.painted)){const[r,c]=k.split(',').map(Number);ctx.fillStyle=col;ctx.fillRect(c*CELL+ox,r*CELL+oy,CELL,CELL);}
   ctx.save();ctx.strokeStyle='rgba(0,0,0,0.12)';ctx.lineWidth=1;
-  for(let i=0;i<=GRID_COLS;i++){ctx.beginPath();ctx.moveTo(i*CELL,0);ctx.lineTo(i*CELL,CANVAS_H);ctx.stroke();}
-  for(let i=0;i<=GRID_ROWS;i++){ctx.beginPath();ctx.moveTo(0,i*CELL);ctx.lineTo(CANVAS_W,i*CELL);ctx.stroke();}
+  for(let i=0;i<=GRID_COLS;i++){ctx.beginPath();ctx.moveTo(i*CELL+ox,oy);ctx.lineTo(i*CELL+ox,GRID_ROWS*CELL+oy);ctx.stroke();}
+  for(let i=0;i<=GRID_ROWS;i++){ctx.beginPath();ctx.moveTo(ox,i*CELL+oy);ctx.lineTo(GRID_COLS*CELL+ox,i*CELL+oy);ctx.stroke();}
+  ctx.restore();
+  // Labels (letras no topo, números à esquerda)
+  ctx.save();
+  ctx.fillStyle='#9ca3af';
+  ctx.font='bold 11px system-ui, -apple-system, sans-serif';
+  ctx.textAlign='center';
+  ctx.textBaseline='middle';
+  // Letras A-H no topo
+  const letters='ABCDEFGH';
+  for(let c=0;c<GRID_COLS;c++){
+    ctx.fillText(letters[c],c*CELL+CELL/2+ox,oy-10);
+  }
+  // Números 1-8 à esquerda
+  ctx.textAlign='right';
+  for(let r=0;r<GRID_ROWS;r++){
+    ctx.fillText((r+1),ox-8,r*CELL+CELL/2+oy);
+  }
   ctx.restore();
   const rad=turtle.angle*Math.PI/180;
   ctx.save();ctx.translate(turtle.x,turtle.y);ctx.rotate(rad);
@@ -414,6 +437,34 @@ function resize(){
   Blockly.svgResize(workspace);
 }
 window.addEventListener('resize',resize);resize();
+
+// ── Resize handle ────────────────────────────────────────────
+const resizeHandle=document.getElementById('resize-handle');
+const rightPanel=document.getElementById('right-panel');
+let isResizing=false;
+
+resizeHandle.addEventListener('mousedown',(e)=>{
+  isResizing=true;
+  document.body.style.cursor='ew-resize';
+  document.body.style.userSelect='none';
+});
+
+document.addEventListener('mousemove',(e)=>{
+  if(!isResizing)return;
+  const containerWidth=document.getElementById('main').offsetWidth;
+  const newWidth=containerWidth-e.clientX;
+  const clampedWidth=Math.max(250,Math.min(600,newWidth));
+  rightPanel.style.width=clampedWidth+'px';
+  resize();
+});
+
+document.addEventListener('mouseup',()=>{
+  if(isResizing){
+    isResizing=false;
+    document.body.style.cursor='';
+    document.body.style.userSelect='';
+  }
+});
 
 turtle=makeTurtle(0,0);render();syncButtons();
 
