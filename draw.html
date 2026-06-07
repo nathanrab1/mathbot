@@ -18,6 +18,9 @@
     #header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
     .btn-back { font-size: 0.78rem; font-weight: 600; color: #6b7280; text-decoration: none; padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; }
     .btn-back:hover { background: #e5e7eb; color: #374151; }
+    #project-name { font-size: 0.78rem; padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; font-weight: 500; color: #374151; width: 180px; transition: all 0.15s; }
+    #project-name:focus { outline: none; border-color: #2563eb; background: #fff; }
+    #project-name::placeholder { color: #9ca3af; }
     #main { display: flex; flex: 1; overflow: hidden; }
     #workspace-container { flex: 1; position: relative; min-width: 0; }
     #blocklyDiv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
@@ -65,6 +68,7 @@
     <div class="subtitle">Desenho Livre</div>
   </div>
   <div id="header-right">
+    <input type="text" id="project-name" placeholder="Nome do projeto" maxlength="30">
     <a href="index.html" class="btn-back">Início</a>
   </div>
 </div>
@@ -491,7 +495,9 @@ document.getElementById('btn-parar').addEventListener('click',doStop);
 
 document.getElementById('btn-baixar').addEventListener('click',()=>{
   const blob=new Blob([JSON.stringify(Blockly.serialization.workspaces.save(workspace),null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='emoji-coder.json';a.click();URL.revokeObjectURL(url);
+  const projectName=document.getElementById('project-name').value.trim()||'emoji-coder';
+  const fileName=projectName.replace(/[^a-z0-9_-]/gi,'_')+'.json';
+  const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=fileName;a.click();URL.revokeObjectURL(url);
 });
 const fi=document.getElementById('file-input');
 document.getElementById('btn-carregar').addEventListener('click',()=>fi.click());
