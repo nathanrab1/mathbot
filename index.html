@@ -42,6 +42,13 @@
       <h2>Desenho Livre</h2>
       <p>Explore todos os blocos e crie seu próprio programa</p>
       <div class="grid-selector">
+        <label>Biblioteca de Blocos</label>
+        <select id="block-library" onclick="event.stopPropagation()">
+          <option value="turtle">Turtle (Frente/Trás + Girar)</option>
+          <option value="direct">Direto (↑↓←→)</option>
+        </select>
+      </div>
+      <div class="grid-selector">
         <label>Tamanho da Grade</label>
         <select id="grid-size" onclick="event.stopPropagation()">
           <option value="8">8 × 8</option>
@@ -53,9 +60,10 @@
     </div>
   <script>
     document.getElementById('draw-card').addEventListener('click', (e) => {
-      if (e.target.id !== 'grid-size') {
+      if (e.target.id !== 'grid-size' && e.target.id !== 'block-library') {
         const size = document.getElementById('grid-size').value;
-        window.location.href = `draw.html?size=${size}`;
+        const library = document.getElementById('block-library').value;
+        window.location.href = `draw.html?size=${size}&library=${library}`;
       }
     });
   </script>

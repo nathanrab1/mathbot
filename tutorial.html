@@ -208,6 +208,29 @@
       <div id="status-text">Pronto</div>
     </div>
     <div class="r-section">
+      <div class="panel-label">Configurações</div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <label style="font-size: 0.75rem; font-weight: 600; color: #374151;">Biblioteca de Blocos</label>
+          <select id="block-library" style="padding: 6px 8px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.8rem; background: #fff; cursor: pointer;">
+            <option value="turtle">Turtle (Frente/Trás + Girar)</option>
+            <option value="direct">Direto (↑↓←→)</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.75rem; font-weight: 600; color: #374151;">Colunas</label>
+            <input type="number" id="grid-cols" min="4" max="16" value="8" style="padding: 6px 8px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.8rem;">
+          </div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+            <label style="font-size: 0.75rem; font-weight: 600; color: #374151;">Linhas</label>
+            <input type="number" id="grid-rows" min="4" max="16" value="8" style="padding: 6px 8px; border-radius: 6px; border: 1px solid #e5e7eb; font-size: 0.8rem;">
+          </div>
+        </div>
+        <button class="btn btn-project" id="btn-aplicar-config" style="background: #2563eb; color: #fff; margin-top: 4px;">Aplicar</button>
+      </div>
+    </div>
+    <div class="r-section">
       <div class="panel-label">Projeto</div>
       <div id="project-row">
         <button class="btn btn-project" id="btn-baixar">⬇ Baixar</button>

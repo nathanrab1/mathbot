@@ -1,6 +1,12 @@
 // ── Tutorial Logic ──────────────────────────────────────────
 // Modais, carregamento de desafios, validação e progressão
 
+// Bibliotecas de blocos
+const BLOCK_LIBRARIES = {
+  turtle: ['logo_frente', 'logo_tras', 'logo_esquerda', 'logo_direita', 'logo_cor', 'logo_cor_azul', 'controls_repeat_ext', 'func_definir', 'func_chamar'],
+  direct: ['logo_mover_cima', 'logo_mover_baixo', 'logo_mover_esquerda', 'logo_mover_direita', 'logo_cor', 'logo_cor_azul', 'controls_repeat_ext', 'func_definir', 'func_chamar']
+};
+
 // Toolbox XML por tipo de bloco
 const BLOCK_XML = {
   logo_frente:          `<block type="logo_frente"><value name="PASSOS"><block type="math_number"><field name="NUM">1</field></block></value></block>`,
@@ -227,4 +233,35 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // Carrega o desafio inicial
   loadChallenge(startIdx);
+
+  // ── Configurações personalizadas ────────────────────────────
+  document.getElementById('btn-aplicar-config').addEventListener('click', () => {
+    const library = document.getElementById('block-library').value;
+    const cols = parseInt(document.getElementById('grid-cols').value, 10);
+    const rows = parseInt(document.getElementById('grid-rows').value, 10);
+
+    // Validação
+    if (cols < 4 || cols > 16 || rows < 4 || rows > 16) {
+      document.getElementById('status-text').textContent = 'Grid deve ter entre 4 e 16 células';
+      return;
+    }
+
+    // Aplica grid
+    initGrid(cols, rows);
+    turtle = makeTurtle(0, 0);
+    render();
+
+    // Aplica biblioteca de blocos
+    const blockTypes = BLOCK_LIBRARIES[library] || BLOCK_LIBRARIES.turtle;
+    const xml = buildToolboxXml(blockTypes);
+    ws.updateToolbox(xml);
+
+    // Força recalculo do layout
+    requestAnimationFrame(() => {
+      Blockly.svgResize(ws);
+      ws.updateToolbox(xml);
+    });
+
+    document.getElementById('status-text').textContent = `Grid ${cols}×${rows} | ${library === 'turtle' ? 'Turtle' : 'Direto'}`;
+  });
 });

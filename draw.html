@@ -204,13 +204,32 @@
   </div>
 </div>
 
-<xml id="toolbox" style="display:none">
+<xml id="toolbox-turtle" style="display:none">
   <button text="Mover" callbackKey="noop" web-class="cat-hdr cat-mover"></button>
   <block type="logo_frente"></block>
   <block type="logo_tras"></block>
   <sep gap="8"></sep>
   <block type="logo_esquerda"></block>
   <block type="logo_direita"></block>
+  <sep gap="12"></sep>
+  <button text="Pintar" callbackKey="noop" web-class="cat-hdr cat-pintar"></button>
+  <block type="logo_cor"></block>
+  <sep gap="12"></sep>
+  <button text="Controle" callbackKey="noop" web-class="cat-hdr cat-controle"></button>
+  <block type="controls_repeat_ext"><value name="TIMES"><block type="math_number"><field name="NUM">4</field></block></value></block>
+  <sep gap="12"></sep>
+  <button text="Funções" callbackKey="noop" web-class="cat-hdr cat-funcoes"></button>
+  <block type="func_definir"></block>
+  <block type="func_chamar"></block>
+  <sep gap="300"></sep>
+</xml>
+
+<xml id="toolbox-direct" style="display:none">
+  <button text="Mover" callbackKey="noop" web-class="cat-hdr cat-mover"></button>
+  <block type="logo_mover_cima"></block>
+  <block type="logo_mover_baixo"></block>
+  <block type="logo_mover_esquerda"></block>
+  <block type="logo_mover_direita"></block>
   <sep gap="12"></sep>
   <button text="Pintar" callbackKey="noop" web-class="cat-hdr cat-pintar"></button>
   <block type="logo_cor"></block>
@@ -510,9 +529,18 @@ window.addEventListener('wheel',function(e){
 },{capture:true,passive:false});
 
 // ── Init ─────────────────────────────────────────────────────
-initGrid(8,8);
+// Ler parâmetros da URL
+const urlParams=new URLSearchParams(window.location.search);
+const libraryParam=urlParams.get('library')||'turtle';
+const gridSize=parseInt(urlParams.get('size')||'8',10);
+const toolboxId=libraryParam==='direct'?'toolbox-direct':'toolbox-turtle';
+
+// Inicializa grid com tamanho da URL
+const finalGridSize=[8,10,12,16].includes(gridSize)?gridSize:8;
+initGrid(finalGridSize,finalGridSize);
+
 const workspace=Blockly.inject('blocklyDiv',{
-  toolbox:document.getElementById('toolbox'),scrollbars:true,trashcan:true,
+  toolbox:document.getElementById(toolboxId),scrollbars:true,trashcan:true,
   zoom:{controls:true,wheel:false,startScale:1.0,maxScale:3,minScale:0.3},
   grid:{spacing:24,length:6,colour:'#e0e0e0',snap:false}
 });
@@ -563,20 +591,13 @@ document.addEventListener('mouseup',()=>{
   }
 });
 
-// ── Read grid size from URL ─────────────────────────────────
-const urlParams=new URLSearchParams(window.location.search);
-const gridSize=parseInt(urlParams.get('size')||'8',10);
-if([8,10,12,16].includes(gridSize)){
-  initGrid(gridSize,gridSize);
-  document.getElementById('grid-label').textContent=`Tela da Tartaruga — ${gridSize} × ${gridSize}`;
-  // Ajustar tamanho do painel para grids maiores
-  const rightPanel=document.getElementById('right-panel');
-  if(gridSize===16){
-    rightPanel.style.width='500px';
-  }else if(gridSize===12){
-    rightPanel.style.width='440px';
-  }
+// ── Ajustar painel para grids maiores ───────────────────────
+if(finalGridSize===16){
+  document.getElementById('right-panel').style.width='500px';
+}else if(finalGridSize===12){
+  document.getElementById('right-panel').style.width='440px';
 }
+document.getElementById('grid-label').textContent=`Tela da Tartaruga — ${finalGridSize} × ${finalGridSize}`;
 
 turtle=makeTurtle(0,0);render();syncButtons();
 
