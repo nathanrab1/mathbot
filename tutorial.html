@@ -68,11 +68,13 @@
     #modal-description { font-size: 0.95rem; color: #374151; line-height: 1.65; }
     #modal-tip { font-size: 0.85rem; color: #4b5563; background: #f0f9ff; border-radius: 10px; padding: 12px 14px; border-left: 3px solid #2563eb; line-height: 1.55; }
     #modal-tip:empty { display: none; }
-    #modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
+    #modal-footer { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 6px; flex-wrap: wrap; }
     .modal-btn-primary { padding: 13px 26px; background: #16a34a; color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.15s; min-height: 44px; }
     .modal-btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
     .modal-btn-secondary { padding: 13px 20px; background: #f0f2f5; color: #374151; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.15s; min-height: 44px; }
     .modal-btn-secondary:hover { background: #e5e7eb; }
+    .modal-footer-left { display: flex; gap: 10px; }
+    .modal-footer-right { display: flex; gap: 10px; }
   </style>
 </head>
 <body>
@@ -534,7 +536,7 @@ function freezeFlyoutScale(ws){
 }
 
 // ── Modal ────────────────────────────────────────────────────
-function showModal({progress,title,description,tip,primaryLabel,primaryAction,secondaryLabel,secondaryHref}){
+function showModal({progress,title,description,tip,primaryLabel,primaryAction,secondaryLabel,secondaryHref,reviewButton}){
   console.log('showModal chamado:', {progress, title, primaryLabel});
   document.getElementById('modal-progress').textContent=progress;
   document.getElementById('modal-title').textContent=title;
@@ -543,8 +545,36 @@ function showModal({progress,title,description,tip,primaryLabel,primaryAction,se
   const dots=document.getElementById('modal-dots');
   dots.innerHTML=CHALLENGES.map((_,i)=>`<div class="modal-dot ${i<currentIdx?'done':i===currentIdx?'active':''}"></div>`).join('');
   const footer=document.getElementById('modal-footer');footer.innerHTML='';
-  if(secondaryLabel&&secondaryHref){const a=document.createElement('a');a.href=secondaryHref;a.className='modal-btn-secondary';a.textContent=secondaryLabel;footer.appendChild(a);}
-  const btn=document.createElement('button');btn.className='modal-btn-primary';btn.textContent=primaryLabel;btn.onclick=primaryAction;footer.appendChild(btn);
+
+  // Botões da esquerda (secundários)
+  const leftDiv=document.createElement('div');
+  leftDiv.className='modal-footer-left';
+  if(secondaryLabel&&secondaryHref){
+    const a=document.createElement('a');
+    a.href=secondaryHref;
+    a.className='modal-btn-secondary';
+    a.textContent=secondaryLabel;
+    leftDiv.appendChild(a);
+  }
+  if(reviewButton){
+    const reviewBtn=document.createElement('button');
+    reviewBtn.className='modal-btn-secondary';
+    reviewBtn.textContent='👁️ Rever código';
+    reviewBtn.onclick=closeModal;
+    leftDiv.appendChild(reviewBtn);
+  }
+  footer.appendChild(leftDiv);
+
+  // Botões da direita (primário)
+  const rightDiv=document.createElement('div');
+  rightDiv.className='modal-footer-right';
+  const btn=document.createElement('button');
+  btn.className='modal-btn-primary';
+  btn.textContent=primaryLabel;
+  btn.onclick=primaryAction;
+  rightDiv.appendChild(btn);
+  footer.appendChild(rightDiv);
+
   document.getElementById('modal-overlay').classList.remove('hidden');
 }
 function closeModal(){document.getElementById('modal-overlay').classList.add('hidden');}
@@ -584,7 +614,7 @@ function showSuccessModal(ch){
   const completedIdx=currentIdx; // Captura o índice do desafio que acabou de completar
   const nextIdx=completedIdx+1; // Próximo desafio
   const isLast=completedIdx>=CHALLENGES.length-1;
-  showModal({progress:'Desafio '+(completedIdx+1)+' de '+CHALLENGES.length,title:'🎉 Parabéns!',description:ch.successMsg,tip:'',primaryLabel:isLast?'🏁 Voltar ao início':'Próximo desafio →',primaryAction:isLast?()=>{window.location.href='index.html';}:()=>{console.log('Clicou em Próximo, indo para índice:', nextIdx);loadChallenge(nextIdx);},secondaryLabel:'← Início',secondaryHref:'index.html'});
+  showModal({progress:'Desafio '+(completedIdx+1)+' de '+CHALLENGES.length,title:'🎉 Parabéns!',description:ch.successMsg,tip:'',primaryLabel:isLast?'🏁 Voltar ao início':'Próximo desafio →',primaryAction:isLast?()=>{window.location.href='index.html';}:()=>{console.log('Clicou em Próximo, indo para índice:', nextIdx);loadChallenge(nextIdx);},secondaryLabel:'← Início',secondaryHref:'index.html',reviewButton:true});
 }
 
 // ── Auto-save ────────────────────────────────────────────────
