@@ -2,17 +2,17 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Emoji Coder</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 48px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 48px; touch-action: manipulation; }
     .hero { text-align: center; }
     .hero-icon { font-size: 4rem; line-height: 1; margin-bottom: 12px; }
     .hero h1 { font-size: 2.8rem; font-weight: 800; color: #111827; letter-spacing: -0.03em; }
     .hero p { font-size: 1.05rem; color: #6b7280; margin-top: 8px; }
     .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; padding: 0 16px 40px; }
-    .card { background: #fff; border-radius: 18px; padding: 32px 28px; width: 220px; text-align: center; border: 2px solid #e5e7eb; transition: all 0.2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+    .card { background: #fff; border-radius: 18px; padding: 32px 28px; width: 220px; text-align: center; border: 2px solid #e5e7eb; transition: all 0.2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 12px; -webkit-tap-highlight-color: transparent; }
     .card:hover { border-color: #2563eb; transform: translateY(-5px); box-shadow: 0 16px 40px rgba(37,99,235,0.12); }
     .card-icon { font-size: 2.8rem; }
     .card h2 { font-size: 1.15rem; font-weight: 700; color: #111827; }
@@ -20,7 +20,7 @@
     .card-link { cursor: pointer; }
     .grid-selector { margin-top: 8px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
     .grid-selector label { display: block; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .grid-selector select { width: 100%; padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; font-size: 0.85rem; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s; }
+    .grid-selector select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; font-size: 0.88rem; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s; min-height: 40px; }
     .grid-selector select:hover { background: #f0f2f5; border-color: #2563eb; }
     .grid-selector select:focus { outline: none; border-color: #2563eb; background: #fff; }
   </style>

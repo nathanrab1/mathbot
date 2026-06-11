@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Emoji Coder — Tutorial</title>
   <script src="https://unpkg.com/blockly/blockly_compressed.js"></script>
   <script src="https://unpkg.com/blockly/blocks_compressed.js"></script>
@@ -10,14 +10,14 @@
   <script src="https://unpkg.com/blockly/msg/pt-br.js"></script>
   <script src="https://unpkg.com/@blockly/field-colour/dist/index.js"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; height: 100vh; display: flex; flex-direction: column; overflow: hidden; touch-action: none; }
     #header { background: #fff; padding: 0 20px; height: 54px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #e5e7eb; flex-shrink: 0; z-index: 10; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
     #header h1 { font-size: 1.15rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
     #header .subtitle { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
     #header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
     #challenge-nav { display: flex; align-items: center; gap: 8px; }
-    .btn-nav { font-size: 0.78rem; font-weight: 600; color: #6b7280; padding: 6px 10px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; cursor: pointer; }
+    .btn-nav { font-size: 0.78rem; font-weight: 600; color: #6b7280; padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; cursor: pointer; min-height: 36px; }
     .btn-nav:hover:not(:disabled) { background: #e5e7eb; color: #374151; }
     .btn-nav:disabled { opacity: 0.3; cursor: not-allowed; }
     #progress-label { font-size: 0.72rem; font-weight: 700; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.08em; }
@@ -31,7 +31,7 @@
     .panel-label { font-size: 0.62rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
     #turtle-canvas { display: block; border: 1px solid #e5e7eb; border-radius: 8px; background: #fafafa; width: 100%; height: auto; box-shadow: inset 0 1px 3px rgba(0,0,0,0.04); }
     #controls { display: flex; gap: 6px; width: 100%; }
-    .btn { flex: 1; padding: 9px 4px; border: none; border-radius: 10px; font-size: 0.78rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em; box-shadow: 0 2px 5px rgba(0,0,0,0.12); }
+    .btn { flex: 1; padding: 12px 6px; border: none; border-radius: 10px; font-size: 0.82rem; font-weight: 700; cursor: pointer; transition: all 0.15s ease; letter-spacing: 0.02em; box-shadow: 0 2px 5px rgba(0,0,0,0.12); min-height: 44px; }
     .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     .btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 1px 3px rgba(0,0,0,0.1); filter: brightness(0.95); }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
@@ -65,9 +65,9 @@
     #modal-tip { font-size: 0.85rem; color: #4b5563; background: #f0f9ff; border-radius: 10px; padding: 12px 14px; border-left: 3px solid #2563eb; line-height: 1.55; }
     #modal-tip:empty { display: none; }
     #modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 6px; }
-    .modal-btn-primary { padding: 11px 24px; background: #16a34a; color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.15s; }
+    .modal-btn-primary { padding: 13px 26px; background: #16a34a; color: #fff; border: none; border-radius: 10px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: all 0.15s; min-height: 44px; }
     .modal-btn-primary:hover { filter: brightness(1.08); transform: translateY(-1px); }
-    .modal-btn-secondary { padding: 11px 18px; background: #f0f2f5; color: #374151; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.15s; }
+    .modal-btn-secondary { padding: 13px 20px; background: #f0f2f5; color: #374151; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; transition: all 0.15s; min-height: 44px; }
     .modal-btn-secondary:hover { background: #e5e7eb; }
   </style>
 </head>
