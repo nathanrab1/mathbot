@@ -205,6 +205,7 @@
         <button class="btn btn-project" id="btn-carregar">⬆ Carregar</button>
         <input type="file" id="file-input" accept=".json" style="display:none">
       </div>
+      <button class="btn btn-project" id="btn-limpar" style="background: #dc2626; color: #fff; margin-top: 8px;">🗑️ Limpar Tudo</button>
     </div>
     <div id="hint">Começa no canto sup. esq. olhando para a direita<br>1 passo = 1 célula &nbsp;|&nbsp; grade 8×8</div>
   </div>
@@ -477,10 +478,10 @@ function applyCmd(cmd){
     case'b':turtle.x-=dx*cmd.n*CELL;turtle.y-=dy*cmd.n*CELL;clampTurtle();break;
     case'l':turtle.angle=(turtle.angle-cmd.n%360+360)%360;break;
     case'r':turtle.angle=(turtle.angle+cmd.n)%360;break;
-    case'rd':turtle.x+=cmd.n*CELL;clampTurtle();break;
-    case'ld':turtle.x-=cmd.n*CELL;clampTurtle();break;
-    case'ud':turtle.y-=cmd.n*CELL;clampTurtle();break;
-    case'dd':turtle.y+=cmd.n*CELL;clampTurtle();break;
+    case'rd':turtle.angle=90;turtle.x+=cmd.n*CELL;clampTurtle();break;
+    case'ld':turtle.angle=270;turtle.x-=cmd.n*CELL;clampTurtle();break;
+    case'ud':turtle.angle=0;turtle.y-=cmd.n*CELL;clampTurtle();break;
+    case'dd':turtle.angle=180;turtle.y+=cmd.n*CELL;clampTurtle();break;
     case'cor':turtle.penColor=cmd.cor;paintCurrentCell();break;
   }
   render();
@@ -493,7 +494,20 @@ let _commands=[],_cmdIndex=0,_mode='idle',_timer=null,_startRow=0,_startCol=0;
 function setStatus(t){const e=document.getElementById('status-text');if(e)e.textContent=t;}
 function syncButtons(){
   const e=document.getElementById('btn-executar'),p=document.getElementById('btn-passo'),s=document.getElementById('btn-parar');
-  if(e)e.disabled=_mode!=='idle';if(p)p.disabled=_mode==='running';if(s)s.disabled=_mode==='idle';
+  if(e){
+    if(_mode==='running'){
+      e.innerHTML='&#x23F8; Pausar';
+      e.disabled=false;
+    }else if(_mode==='paused'){
+      e.innerHTML='&#x25B6; Retomar';
+      e.disabled=false;
+    }else{
+      e.innerHTML='&#x25B6; Executar';
+      e.disabled=false;
+    }
+  }
+  if(p)p.disabled=_mode==='running';
+  if(s)s.disabled=_mode==='idle';
 }
 function buildCommands(ws){
   const start=ws.getTopBlocks(true).find(b=>b.type==='ao_iniciar');
@@ -508,8 +522,54 @@ function buildCommands(ws){
 }
 function _done(msg){clearTimeout(_timer);_mode='idle';_commands=[];_cmdIndex=0;syncButtons();setStatus(msg);}
 function _tick(ws){if(_mode!=='running')return;applyCmd(_commands[_cmdIndex]);_cmdIndex++;setStatus('Executando…  '+_cmdIndex+' / '+_commands.length);if(_cmdIndex<_commands.length){_timer=setTimeout(()=>_tick(ws),getDelay());}else{_done('Concluído ('+_commands.length+' passos)');}}
-function doRun(ws){turtle=makeTurtle(_startRow,_startCol);render();_commands=buildCommands(ws);if(!_commands.length)return;_cmdIndex=0;_mode='running';syncButtons();setStatus('Executando…  0 / '+_commands.length);_tick(ws);}
-function doStep(ws){if(_mode==='idle'){turtle=makeTurtle(_startRow,_startCol);render();_commands=buildCommands(ws);if(!_commands.length)return;_cmdIndex=0;_mode='stepping';syncButtons();}if(_cmdIndex>=_commands.length){_done('Concluído');return;}applyCmd(_commands[_cmdIndex]);_cmdIndex++;setStatus('Passo '+_cmdIndex+' / '+_commands.length);if(_cmdIndex>=_commands.length)_done('Concluído ('+_commands.length+' passos)');}
+function doRun(ws){
+  if(_mode==='paused'){
+    // Retomar execução
+    _mode='running';
+    syncButtons();
+    setStatus('Executando…  '+_cmdIndex+' / '+_commands.length);
+    _tick(ws);
+  }else{
+    // Iniciar nova execução
+    turtle=makeTurtle(_startRow,_startCol);
+    render();
+    _commands=buildCommands(ws);
+    if(!_commands.length)return;
+    _cmdIndex=0;
+    _mode='running';
+    syncButtons();
+    setStatus('Executando…  0 / '+_commands.length);
+    _tick(ws);
+  }
+}
+function doPause(){
+  if(_mode==='running'){
+    clearTimeout(_timer);
+    _mode='paused';
+    syncButtons();
+    setStatus('Pausado no passo '+_cmdIndex+' / '+_commands.length);
+  }
+}
+function doStep(ws){
+  if(_mode==='idle'){
+    turtle=makeTurtle(_startRow,_startCol);
+    render();
+    _commands=buildCommands(ws);
+    if(!_commands.length)return;
+    _cmdIndex=0;
+    _mode='stepping';
+    syncButtons();
+  }else if(_mode==='paused'){
+    // Permitir usar passo quando pausado
+    _mode='stepping';
+    syncButtons();
+  }
+  if(_cmdIndex>=_commands.length){_done('Concluído');return;}
+  applyCmd(_commands[_cmdIndex]);
+  _cmdIndex++;
+  setStatus('Passo '+_cmdIndex+' / '+_commands.length);
+  if(_cmdIndex>=_commands.length)_done('Concluído ('+_commands.length+' passos)');
+}
 function doStop(){clearTimeout(_timer);_done('Parado no passo '+_cmdIndex);}
 
 // ── Flyout freeze + wheel ────────────────────────────────────
@@ -684,7 +744,13 @@ if(hasAutoSave){
 
 requestAnimationFrame(()=>{resize();Blockly.svgResize(workspace);workspace.updateToolbox(document.getElementById('toolbox'));});
 
-document.getElementById('btn-executar').addEventListener('click',()=>doRun(workspace));
+document.getElementById('btn-executar').addEventListener('click',()=>{
+  if(_mode==='running'){
+    doPause();
+  }else{
+    doRun(workspace);
+  }
+});
 document.getElementById('btn-passo').addEventListener('click',()=>doStep(workspace));
 document.getElementById('btn-parar').addEventListener('click',doStop);
 
@@ -700,6 +766,16 @@ fi.addEventListener('change',function(){
   const f=this.files[0];if(!f)return;
   const r=new FileReader();r.onload=ev=>{try{Blockly.serialization.workspaces.load(JSON.parse(ev.target.result),workspace);setStatus('Carregado!');}catch(e){setStatus('Erro ao carregar');}};
   r.readAsText(f);this.value='';
+});
+
+document.getElementById('btn-limpar').addEventListener('click',()=>{
+  if(confirm('⚠️ Tem certeza que deseja apagar todos os blocos?\n\nEsta ação não pode ser desfeita.')){
+    workspace.getAllBlocks().filter(b=>b.type!=='ao_iniciar').forEach(b=>b.dispose());
+    turtle=makeTurtle(0,0);
+    render();
+    setStatus('Blocos apagados');
+    setTimeout(()=>setStatus('Pronto'),2000);
+  }
 });
 </script>
 </body>
