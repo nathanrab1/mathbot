@@ -16,6 +16,10 @@
     #header h1 { font-size: 1.15rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
     #header .subtitle { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
     #header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    #autosave-indicator { font-size: 0.7rem; color: #9ca3af; display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity 0.3s; }
+    #autosave-indicator.visible { opacity: 1; }
+    #autosave-indicator.saving { color: #2563eb; }
+    #autosave-indicator.saved { color: #16a34a; }
     .btn-back { font-size: 0.78rem; font-weight: 600; color: #6b7280; text-decoration: none; padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; }
     .btn-back:hover { background: #e5e7eb; color: #374151; }
     #project-name { font-size: 0.78rem; padding: 6px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; font-weight: 500; color: #374151; width: 180px; transition: all 0.15s; }
@@ -162,6 +166,7 @@
     <rect x="154" y="25" width="4" height="4" rx="0.5" fill="#4c97ff"/>
   </svg>
   <div id="header-right">
+    <span id="autosave-indicator"><span id="autosave-icon">💾</span> <span id="autosave-text">Salvo</span></span>
     <input type="text" id="project-name" placeholder="Nome do projeto" maxlength="30">
     <a href="index.html" class="btn-back">Início</a>
   </div>
@@ -621,6 +626,61 @@ if(finalGridSize===16){
 document.getElementById('grid-label').textContent=`Tela da Tartaruga — ${finalGridSize} × ${finalGridSize}`;
 
 turtle=makeTurtle(0,0);render();syncButtons();
+
+// ── Auto-save ────────────────────────────────────────────────
+const AUTOSAVE_KEY='emoji-coder-draw-autosave';
+let autoSaveTimer=null;
+const indicator=document.getElementById('autosave-indicator');
+const indicatorText=document.getElementById('autosave-text');
+
+function showSaveIndicator(state){
+  indicator.classList.remove('saving','saved');
+  indicator.classList.add('visible',state);
+  indicatorText.textContent=state==='saving'?'Salvando...':'Salvo';
+  if(state==='saved'){
+    setTimeout(()=>indicator.classList.remove('visible'),2000);
+  }
+}
+
+function autoSave(){
+  try{
+    showSaveIndicator('saving');
+    const state=Blockly.serialization.workspaces.save(workspace);
+    const projectName=document.getElementById('project-name').value.trim();
+    localStorage.setItem(AUTOSAVE_KEY,JSON.stringify({state,projectName,timestamp:Date.now()}));
+    setTimeout(()=>showSaveIndicator('saved'),300);
+  }catch(e){console.error('Erro ao salvar:',e);}
+}
+
+function loadAutoSave(){
+  try{
+    const saved=localStorage.getItem(AUTOSAVE_KEY);
+    if(!saved)return false;
+    const data=JSON.parse(saved);
+    if(data.state){
+      Blockly.serialization.workspaces.load(data.state,workspace);
+      if(data.projectName)document.getElementById('project-name').value=data.projectName;
+      return true;
+    }
+  }catch(e){console.error('Erro ao carregar:',e);}
+  return false;
+}
+
+function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(autoSave,1000);
+}
+
+workspace.addChangeListener(scheduleAutoSave);
+document.getElementById('project-name').addEventListener('input',scheduleAutoSave);
+
+// Carregar progresso salvo
+const hasAutoSave=loadAutoSave();
+if(hasAutoSave){
+  setStatus('Progresso restaurado');
+  showSaveIndicator('saved');
+  setTimeout(()=>setStatus('Pronto'),2000);
+}
 
 requestAnimationFrame(()=>{resize();Blockly.svgResize(workspace);workspace.updateToolbox(document.getElementById('toolbox'));});
 

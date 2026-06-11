@@ -16,6 +16,10 @@
     #header h1 { font-size: 1.15rem; font-weight: 800; color: #111827; letter-spacing: -0.02em; }
     #header .subtitle { font-size: 0.68rem; color: #9ca3af; margin-top: 2px; }
     #header-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    #autosave-indicator { font-size: 0.7rem; color: #9ca3af; display: flex; align-items: center; gap: 4px; opacity: 0; transition: opacity 0.3s; }
+    #autosave-indicator.visible { opacity: 1; }
+    #autosave-indicator.saving { color: #2563eb; }
+    #autosave-indicator.saved { color: #16a34a; }
     #challenge-nav { display: flex; align-items: center; gap: 8px; }
     .btn-nav { font-size: 0.78rem; font-weight: 600; color: #6b7280; padding: 8px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; transition: all 0.15s; cursor: pointer; min-height: 36px; }
     .btn-nav:hover:not(:disabled) { background: #e5e7eb; color: #374151; }
@@ -173,6 +177,7 @@
     <rect x="154" y="25" width="4" height="4" rx="0.5" fill="#4c97ff"/>
   </svg>
   <div id="header-right">
+    <span id="autosave-indicator"><span id="autosave-icon">💾</span> <span id="autosave-text">Salvo</span></span>
     <div id="challenge-nav">
       <button class="btn-nav" id="btn-prev" title="Desafio anterior">←</button>
       <span id="progress-label">Desafio 1 / 8</span>
@@ -568,6 +573,10 @@ function loadChallenge(idx){
     ws.getAllBlocks().filter(b=>b.type!=='ao_iniciar').forEach(b=>b.dispose());
     requestAnimationFrame(()=>{Blockly.svgResize(ws);ws.updateToolbox(xml);});
   }
+  // Salvar desafio atual
+  saveCurrentChallenge();
+  // Tentar carregar progresso salvo deste desafio
+  loadChallengeProgress(idx);
   showModal({progress:'Desafio '+(idx+1)+' de '+CHALLENGES.length,title:ch.title,description:ch.description,tip:ch.tip,primaryLabel:idx===0?'Vamos lá! 🚀':'Começar desafio!',primaryAction:closeModal,secondaryLabel:'Início',secondaryHref:'index.html'});
 }
 function showSuccessModal(ch){
@@ -578,8 +587,77 @@ function showSuccessModal(ch){
   showModal({progress:'Desafio '+(completedIdx+1)+' de '+CHALLENGES.length,title:'🎉 Parabéns!',description:ch.successMsg,tip:'',primaryLabel:isLast?'🏁 Voltar ao início':'Próximo desafio →',primaryAction:isLast?()=>{window.location.href='index.html';}:()=>{console.log('Clicou em Próximo, indo para índice:', nextIdx);loadChallenge(nextIdx);},secondaryLabel:'← Início',secondaryHref:'index.html'});
 }
 
+// ── Auto-save ────────────────────────────────────────────────
+const AUTOSAVE_CHALLENGE_KEY='emoji-coder-tutorial-challenge';
+const AUTOSAVE_PROGRESS_PREFIX='emoji-coder-tutorial-progress-';
+let autoSaveTimer=null;
+const indicator=document.getElementById('autosave-indicator');
+const indicatorText=document.getElementById('autosave-text');
+
+function showSaveIndicator(state){
+  indicator.classList.remove('saving','saved');
+  indicator.classList.add('visible',state);
+  indicatorText.textContent=state==='saving'?'Salvando...':'Salvo';
+  if(state==='saved'){
+    setTimeout(()=>indicator.classList.remove('visible'),2000);
+  }
+}
+
+function saveCurrentChallenge(){
+  try{
+    localStorage.setItem(AUTOSAVE_CHALLENGE_KEY,currentIdx.toString());
+  }catch(e){console.error('Erro ao salvar desafio atual:',e);}
+}
+
+function loadLastChallenge(){
+  try{
+    const saved=localStorage.getItem(AUTOSAVE_CHALLENGE_KEY);
+    if(saved!==null){
+      const idx=parseInt(saved,10);
+      if(!isNaN(idx)&&idx>=0&&idx<CHALLENGES.length)return idx;
+    }
+  }catch(e){console.error('Erro ao carregar desafio:',e);}
+  return 0;
+}
+
+function saveChallengeProgress(){
+  try{
+    showSaveIndicator('saving');
+    const state=Blockly.serialization.workspaces.save(ws);
+    const key=AUTOSAVE_PROGRESS_PREFIX+currentIdx;
+    localStorage.setItem(key,JSON.stringify({state,timestamp:Date.now()}));
+    setTimeout(()=>showSaveIndicator('saved'),300);
+  }catch(e){console.error('Erro ao salvar progresso:',e);}
+}
+
+function loadChallengeProgress(idx){
+  try{
+    const key=AUTOSAVE_PROGRESS_PREFIX+idx;
+    const saved=localStorage.getItem(key);
+    if(!saved)return false;
+    const data=JSON.parse(saved);
+    if(data.state){
+      // Aguarda um frame para garantir que o workspace está pronto
+      requestAnimationFrame(()=>{
+        Blockly.serialization.workspaces.load(data.state,ws);
+        showSaveIndicator('saved');
+      });
+      return true;
+    }
+  }catch(e){console.error('Erro ao carregar progresso:',e);}
+  return false;
+}
+
+function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(()=>{
+    saveChallengeProgress();
+    saveCurrentChallenge();
+  },1000);
+}
+
 // ── Init ─────────────────────────────────────────────────────
-const startIdx=0; // Sempre começa no primeiro desafio
+const startIdx=loadLastChallenge(); // Carrega último desafio visitado
 
 initGrid(CHALLENGES[startIdx].grid.cols,CHALLENGES[startIdx].grid.rows);
 
@@ -591,6 +669,9 @@ ws=Blockly.inject('blocklyDiv',{
 ws.registerButtonCallback('noop',()=>{});
 Blockly.Xml.domToWorkspace(Blockly.utils.xml.textToDom('<xml><block type="ao_iniciar" x="40" y="40" deletable="false"></block></xml>'),ws);
 freezeFlyoutScale(ws);
+
+// Ativar auto-save quando workspace muda
+ws.addChangeListener(scheduleAutoSave);
 
 window.addEventListener('wheel',function(e){
   const fl=document.querySelector('.blocklyFlyout');if(!fl)return;
