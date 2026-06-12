@@ -1,0 +1,666 @@
+{
+  "project": {
+    "name": "Emoji Coder (MathBot)",
+    "description": "Aplicativo educacional de programação visual com tartaruga gráfica",
+    "version": "2.1",
+    "updated": "2026-06-11"
+  },
+  "features": [
+    {
+      "id": 1,
+      "name": "Touch Support para iPad/Tablets",
+      "category": "UX/UI",
+      "description": "Suporte completo a touch para uso em tablets",
+      "status": "implemented",
+      "files": ["draw.html", "tutorial.html", "index.html"],
+      "changes": [
+        "Meta viewport otimizado (maximum-scale=1.0, user-scalable=no)",
+        "Removido highlight azul do iOS (-webkit-tap-highlight-color: transparent)",
+        "Botões principais: min-height 44px (padrão Apple HIG)",
+        "Resize handle: largura aumentada de 8px → 16px",
+        "Resize handle com suporte touch (touchstart, touchmove, touchend)",
+        "Font-sizes aumentados para melhor legibilidade"
+      ],
+      "benefits": [
+        "Melhor usabilidade em tablets",
+        "Sem conflitos de gestos",
+        "Feedback visual claro",
+        "Cross-platform (desktop + tablet)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Auto-Save (Salvamento Automático)",
+      "category": "Data Persistence",
+      "description": "Sistema de salvamento automático do progresso",
+      "status": "implemented",
+      "files": ["draw.html", "tutorial.html"],
+      "changes": [
+        "Draw: salva workspace + nome do projeto",
+        "Tutorial: salva último desafio visitado",
+        "Tutorial: salva progresso individual de cada desafio (8 saves separados)",
+        "Debouncing: aguarda 1s após última mudança",
+        "Indicador visual: '💾 Salvando...' → '💾 Salvo'",
+        "LocalStorage como backend",
+        "Auto-load ao reabrir"
+      ],
+      "storage": {
+        "draw": {
+          "key": "emoji-coder-draw-autosave",
+          "data": {
+            "state": "Blockly workspace serializado",
+            "projectName": "Nome do projeto",
+            "timestamp": "Data/hora do save"
+          }
+        },
+        "tutorial": {
+          "challengeKey": "emoji-coder-tutorial-challenge",
+          "progressKey": "emoji-coder-tutorial-progress-{0-7}",
+          "data": {
+            "state": "Blockly workspace do desafio",
+            "timestamp": "Data/hora do save"
+          }
+        }
+      },
+      "benefits": [
+        "Sem perda de trabalho ao fechar acidentalmente",
+        "Múltiplas sessões (começa em casa, termina na escola)",
+        "Cada desafio mantém progresso independente",
+        "Feedback visual claro"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Botão 'Rever Código' no Modal de Sucesso",
+      "category": "UX/UI",
+      "description": "Permite revisar solução antes de avançar para próximo desafio",
+      "status": "implemented",
+      "files": ["tutorial.html"],
+      "changes": [
+        "Botão '👁️ Rever código' adicionado ao modal de sucesso",
+        "Layout: botões esquerda (secundários) + direita (primário)",
+        "Fecha modal e mostra workspace com solução",
+        "Permite experimentação pós-sucesso"
+      ],
+      "layout": {
+        "left": ["← Início", "👁️ Rever código"],
+        "right": ["Próximo desafio →"]
+      },
+      "benefits": [
+        "Reflexão sobre solução ('o que eu fiz?')",
+        "Comparação entre alunos",
+        "Captura de solução (screenshot)",
+        "Experimentação sem medo"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Simplificação do Tutorial",
+      "category": "UX/UI",
+      "description": "Remoção de configurações desnecessárias do tutorial",
+      "status": "implemented",
+      "files": ["tutorial.html"],
+      "changes": [
+        "Removida seção 'Configurações' do painel lateral",
+        "Removidos: Biblioteca de Blocos, Colunas, Linhas, Botão Aplicar",
+        "Mantido apenas: Controles, Status, Projeto"
+      ],
+      "rationale": [
+        "Tutorial é guiado, não deve ter distrações",
+        "Cada desafio já vem pré-configurado",
+        "Interface mais limpa = foco no aprendizado",
+        "Previne que aluno 'quebre' desafio mudando grid"
+      ],
+      "benefits": [
+        "Foco no aprendizado",
+        "Menos sobrecarga cognitiva",
+        "Previne erros",
+        "Menos suporte necessário"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Rotação Visual da Tartaruga (Modo Direto)",
+      "category": "Visual Feedback",
+      "description": "Tartaruga gira para direção do movimento no modo Direto",
+      "status": "implemented",
+      "files": ["draw.html", "tutorial.html"],
+      "changes": [
+        "↑ Cima: turtle.angle = 0°",
+        "↓ Baixo: turtle.angle = 180°",
+        "← Esquerda: turtle.angle = 270°",
+        "→ Direita: turtle.angle = 90°"
+      ],
+      "modes": {
+        "turtle": {
+          "behavior": "Não afetado (já girava manualmente)",
+          "commands": ["frente", "trás", "girar esquerda", "girar direita"]
+        },
+        "direct": {
+          "behavior": "Gira automaticamente para direção do movimento",
+          "commands": ["↑ cima", "↓ baixo", "← esquerda", "→ direita"]
+        }
+      },
+      "benefits": [
+        "Feedback visual claro (o que vê = o que acontece)",
+        "Mais intuitivo para iniciantes",
+        "Facilita debug",
+        "Consistência mental"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "Botão 'Limpar Tudo'",
+      "category": "UX/UI",
+      "description": "Remove todos os blocos exceto 'Ao iniciar'",
+      "status": "implemented",
+      "files": ["draw.html", "tutorial.html"],
+      "changes": [
+        "Botão '🗑️ Limpar Tudo' vermelho na seção Projeto",
+        "Confirmação obrigatória antes de limpar",
+        "Remove blocos, reseta tartaruga, limpa canvas",
+        "Bloco 'Ao iniciar' protegido (nunca removido)",
+        "Feedback visual: 'Blocos apagados' por 2s"
+      ],
+      "confirmation": {
+        "message": "⚠️ Tem certeza que deseja apagar todos os blocos?\n\nEsta ação não pode ser desfeita.",
+        "buttons": ["Cancelar", "OK"]
+      },
+      "benefits": [
+        "Recomeçar do zero facilmente",
+        "Testar soluções alternativas",
+        "Demonstrações em sala",
+        "Limpar entre alunos"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "Pause/Resume Durante Execução",
+      "category": "Execution Control",
+      "description": "Sistema completo de pause e retomada durante execução",
+      "status": "implemented",
+      "files": ["draw.html", "tutorial.html"],
+      "changes": [
+        "Botão 'Executar' dinâmico: ▶ Executar → ⏸ Pausar → ▶ Retomar",
+        "Estado 'paused' preserva: comandos, índice, tartaruga, pinturas",
+        "Permite usar 'Passo' durante pause",
+        "Pode pausar/retomar múltiplas vezes"
+      ],
+      "states": {
+        "idle": {
+          "button": "▶ Executar",
+          "actions": ["Executar", "Passo"]
+        },
+        "running": {
+          "button": "⏸ Pausar",
+          "actions": ["Pausar", "Parar"]
+        },
+        "paused": {
+          "button": "▶ Retomar",
+          "actions": ["Retomar", "Passo", "Parar"]
+        },
+        "stepping": {
+          "button": "▶ Executar",
+          "actions": ["Passo", "Parar"]
+        }
+      },
+      "benefits": [
+        "Debug facilitado (pause e observe)",
+        "Exploração guiada ('pause aqui...')",
+        "Compreensão de loops",
+        "Controle fino (automático ↔ manual)"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "Separação por Séries (4º e 5º Ano)",
+      "category": "Pedagogy",
+      "description": "Três opções claramente diferenciadas por nível",
+      "status": "implemented",
+      "files": ["index.html"],
+      "changes": [
+        "3 cards no index: Tutorial, Desenho Livre 4º Ano, Desenho Livre 5º Ano",
+        "4º Ano: fixo (8×8, blocos Direto, um clique)",
+        "5º Ano: configurável (grid variável, blocos variáveis)",
+        "Badges coloridas: 4º ANO (azul), 5º ANO (verde)",
+        "Ícones diferentes: 🎨 (4º), 🚀 (5º)"
+      ],
+      "options": {
+        "tutorial": {
+          "icon": "📚",
+          "target": "Todos",
+          "description": "8 desafios guiados",
+          "url": "tutorial.html"
+        },
+        "draw_4ano": {
+          "icon": "🎨",
+          "badge": "4º ANO (azul #2563eb)",
+          "target": "Alunos 9-10 anos",
+          "description": "Grade 8×8 com blocos direcionais (↑↓←→)",
+          "config": {
+            "grid": "8×8 (fixo)",
+            "blocks": "Direto (fixo)",
+            "choices": 0
+          },
+          "url": "draw.html?size=8&library=direct"
+        },
+        "draw_5ano": {
+          "icon": "🚀",
+          "badge": "5º ANO (verde #16a34a)",
+          "target": "Alunos 10-11 anos",
+          "description": "Grade e blocos configuráveis",
+          "config": {
+            "grid": ["8×8", "10×10", "12×12", "16×16"],
+            "blocks": ["Turtle (Frente/Trás + Girar)", "Direto (↑↓←→)"],
+            "choices": 2
+          },
+          "url": "draw.html?size={X}&library={Y}"
+        }
+      },
+      "benefits": [
+        "Clareza de propósito (qual usar?)",
+        "Reduz sobrecarga cognitiva",
+        "Diferenciação pedagógica",
+        "Progressão natural"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "Tutorial 4º Ano (Blocos Direcionais)",
+      "category": "Pedagogy",
+      "description": "Tutorial simplificado com 4 desafios usando apenas blocos direcionais",
+      "status": "implemented",
+      "files": ["tutorial_4ano.html", "index.html"],
+      "changes": [
+        "Novo arquivo tutorial_4ano.html criado",
+        "4 desafios progressivos (ao invés de 8)",
+        "Apenas blocos direcionais: ↑ Cima, ↓ Baixo, ← Esquerda, → Direita",
+        "Grid menor e mais simples (1×4, 1×6, 1×4, 4×4)",
+        "Auto-save separado (não conflita com tutorial 5º ano)",
+        "Index atualizado com 4 cards (Tutorial 4º + 5º, Desenho 4º + 5º)",
+        "Badges coloridas: Tutorial 4º (azul), Tutorial 5º (verde)"
+      ],
+      "challenges": [
+        {
+          "id": 1,
+          "title": "Pinte uma linha!",
+          "grid": "1×4",
+          "blocks": ["→ Direita", "Pintar 🔵"],
+          "concept": "Movimento + Ação",
+          "objective": "Pintar 4 blocos de azul"
+        },
+        {
+          "id": 2,
+          "title": "Use o Repita!",
+          "grid": "1×6",
+          "blocks": ["→ Direita", "Pintar 🔵", "Repita"],
+          "concept": "Introdução a loops",
+          "objective": "Pintar linha de 6 usando Repita"
+        },
+        {
+          "id": 3,
+          "title": "Pinte para baixo!",
+          "grid": "1×4",
+          "blocks": ["→ Direita", "↓ Baixo", "Pintar 🔵", "Repita"],
+          "concept": "Movimento vertical + loops",
+          "objective": "Pintar coluna de 4 blocos"
+        },
+        {
+          "id": 4,
+          "title": "Desenhe um quadrado!",
+          "grid": "4×4",
+          "blocks": ["↑ Cima", "↓ Baixo", "← Esquerda", "→ Direita", "Pintar 🔵", "Repita"],
+          "concept": "4 direções + loops",
+          "objective": "Pintar quadrado 3×3"
+        }
+      ],
+      "auto_save": {
+        "challenge_key": "emoji-coder-tutorial-4ano-challenge",
+        "progress_prefix": "emoji-coder-tutorial-4ano-progress-",
+        "keys": [
+          "emoji-coder-tutorial-4ano-challenge",
+          "emoji-coder-tutorial-4ano-progress-0",
+          "emoji-coder-tutorial-4ano-progress-1",
+          "emoji-coder-tutorial-4ano-progress-2",
+          "emoji-coder-tutorial-4ano-progress-3"
+        ]
+      },
+      "comparison": {
+        "tutorial_4ano": {
+          "challenges": 4,
+          "blocks": ["↑↓←→", "Pintar 🔵", "Repita"],
+          "concepts": ["Movimento cardinal", "Sequência", "Repetição básica"],
+          "grid_sizes": ["1×4", "1×6", "1×4", "4×4"],
+          "complexity": "Baixa",
+          "target_age": "9-10 anos",
+          "duration": "15-25 minutos"
+        },
+        "tutorial_5ano": {
+          "challenges": 8,
+          "blocks": ["Frente/Trás", "Girar", "Pintar (cor variável)", "Repita", "Funções", "↑↓←→"],
+          "concepts": ["Rotação", "Ângulos", "Funções", "Navegação complexa"],
+          "grid_sizes": ["1×8", "4×2", "8×8", "8×9"],
+          "complexity": "Alta",
+          "target_age": "10-11 anos",
+          "duration": "45-60 minutos"
+        }
+      },
+      "benefits": [
+        "Apropriado para iniciantes (4º ano)",
+        "Blocos direcionais mais intuitivos que Frente/Girar",
+        "Desafios curtos e focados",
+        "Progressão clara de conceitos",
+        "Preparação para tutorial 5º ano",
+        "Auto-save independente permite fazer ambos"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "Ajuste de Tamanho de Emojis nos Blocos",
+      "category": "UX/UI",
+      "description": "Redução do tamanho da fonte dos emojis para caber perfeitamente nos blocos do Blockly",
+      "status": "implemented",
+      "files": ["draw.html", "draw_4ano.html", "tutorial.html", "tutorial_4ano.html"],
+      "changes": [
+        "Tamanho da fonte reduzido de 36px original para 14px",
+        "Aplicado a .blocklyText e .blocklyDropdownText",
+        "Redução total de ~61% do tamanho original",
+        "Mantido transform translateY(4px) para centralização vertical"
+      ],
+      "css_rules": {
+        "selector": ".blocklyText, .blocklyDropdownText",
+        "property": "font-size: 14px !important",
+        "reason": "Emojis cabem verticalmente sem distorcer blocos"
+      },
+      "progression": {
+        "original": "36px (padrão)",
+        "attempt_1": "42px (expandiu blocos - revertido)",
+        "attempt_2": "28px (ainda grande)",
+        "attempt_3": "20px (redução 30%)",
+        "final": "14px (redução adicional 30%)"
+      },
+      "benefits": [
+        "Emojis cabem perfeitamente dentro dos blocos",
+        "Sem distorção do layout do Blockly",
+        "Mantém aparência limpa e profissional",
+        "Melhora legibilidade ao reduzir sobreposição"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Reorganização do Index por Série",
+      "category": "UX/UI",
+      "description": "Agrupamento visual do conteúdo por série escolar (4º e 5º ano)",
+      "status": "implemented",
+      "files": ["index.html"],
+      "changes": [
+        "Criação de seções visuais separadas para cada série",
+        "Headers com badges coloridos (azul 4º ano, verde 5º ano)",
+        "Títulos descritivos: 'Para Iniciantes' e 'Para Avançados'",
+        "Cards agrupados dentro de cada seção",
+        "Layout vertical com max-width 1000px",
+        "Background branco nas seções com sombra sutil",
+        "Removidas badges individuais dos cards (agora na seção)"
+      ],
+      "layout": {
+        "structure": "Hero → Seção 4º Ano → Seção 5º Ano",
+        "section_4ano": {
+          "badge": "4º ANO (azul #2563eb)",
+          "title": "Para Iniciantes",
+          "description": "Blocos direcionais simples (↑↓←→) para aprender o básico",
+          "cards": ["Tutorial 4º Ano", "Desenho Livre 4º Ano"]
+        },
+        "section_5ano": {
+          "badge": "5º ANO (verde #16a34a)",
+          "title": "Para Avançados",
+          "description": "Rotação, funções e configurações avançadas",
+          "cards": ["Tutorial 5º Ano", "Desenho Livre 5º Ano"]
+        }
+      },
+      "benefits": [
+        "Navegação mais clara e intuitiva",
+        "Hierarquia visual evidente (série → atividades)",
+        "Professor identifica rapidamente conteúdo apropriado",
+        "Alunos não se confundem sobre qual usar",
+        "Design mais profissional e organizado",
+        "Melhor aproveitamento do espaço vertical"
+      ]
+    }
+  ],
+  "technical_details": {
+    "frameworks": {
+      "blockly": {
+        "version": "unpkg CDN",
+        "language": "pt-br",
+        "plugins": ["@blockly/field-colour"],
+        "customization": {
+          "text_size": "14px (reduzido de 36px padrão)",
+          "reason": "Emojis precisam caber verticalmente nos blocos",
+          "css_override": ".blocklyText { font-size: 14px !important; }"
+        }
+      }
+    },
+    "storage": {
+      "type": "localStorage",
+      "capacity": "~5-10MB per domain",
+      "keys": [
+        "emoji-coder-draw-autosave",
+        "emoji-coder-tutorial-challenge",
+        "emoji-coder-tutorial-progress-0",
+        "emoji-coder-tutorial-progress-1",
+        "emoji-coder-tutorial-progress-2",
+        "emoji-coder-tutorial-progress-3",
+        "emoji-coder-tutorial-progress-4",
+        "emoji-coder-tutorial-progress-5",
+        "emoji-coder-tutorial-progress-6",
+        "emoji-coder-tutorial-progress-7",
+        "emoji-coder-tutorial-4ano-challenge",
+        "emoji-coder-tutorial-4ano-progress-0",
+        "emoji-coder-tutorial-4ano-progress-1",
+        "emoji-coder-tutorial-4ano-progress-2",
+        "emoji-coder-tutorial-4ano-progress-3"
+      ]
+    },
+    "url_parameters": {
+      "size": {
+        "type": "integer",
+        "values": [8, 10, 12, 16],
+        "default": 8,
+        "description": "Grid size (cols × rows)"
+      },
+      "library": {
+        "type": "string",
+        "values": ["turtle", "direct"],
+        "default": "turtle",
+        "description": "Block library to use"
+      }
+    },
+    "turtle": {
+      "initial_position": {
+        "x": "Top-left corner (0,0)",
+        "angle": "90° (facing right)"
+      },
+      "angles": {
+        "up": 0,
+        "down": 180,
+        "left": 270,
+        "right": 90
+      },
+      "cell_size": "40px"
+    }
+  },
+  "files_modified": [
+    {
+      "file": "index.html",
+      "changes": [
+        "Touch support (viewport, tap-highlight)",
+        "Reorganização por série: seções visuais separadas",
+        "Seção 4º Ano: Tutorial + Desenho Livre agrupados",
+        "Seção 5º Ano: Tutorial + Desenho Livre agrupados",
+        "Headers com badges coloridos e descrições",
+        "Layout vertical responsivo (max-width 1000px)",
+        "Cards com hover suave e background gradient",
+        "Tutorial 4º: link direto para tutorial_4ano.html",
+        "Tutorial 5º: link para tutorial.html",
+        "Desenho 4º: link direto (8×8, Direto)",
+        "Desenho 5º: dropdowns de configuração"
+      ]
+    },
+    {
+      "file": "draw.html",
+      "changes": [
+        "Touch support (viewport, buttons, resize handle)",
+        "Auto-save com indicador visual",
+        "Rotação visual da tartaruga (modo Direto)",
+        "Botão 'Limpar Tudo'",
+        "Pause/Resume durante execução",
+        "Tamanho de emojis ajustado (14px)"
+      ]
+    },
+    {
+      "file": "tutorial.html",
+      "description": "Tutorial 5º Ano (original)",
+      "changes": [
+        "Touch support (viewport, buttons)",
+        "Auto-save por desafio com indicador visual",
+        "Botão 'Rever código' no modal de sucesso",
+        "Remoção da seção Configurações",
+        "Rotação visual da tartaruga (modo Direto)",
+        "Botão 'Limpar Tudo'",
+        "Pause/Resume durante execução",
+        "Tamanho de emojis ajustado (14px)"
+      ]
+    },
+    {
+      "file": "tutorial_4ano.html",
+      "description": "Tutorial 4º Ano (novo)",
+      "changes": [
+        "Cópia adaptada do tutorial.html",
+        "4 desafios ao invés de 8",
+        "Apenas blocos direcionais (↑↓←→)",
+        "Grids menores e mais simples (1×4, 1×6, 1×4, 4×4)",
+        "Auto-save com chaves separadas (4ano-*)",
+        "Título: 'Tutorial 4º Ano'",
+        "Mesmas features: touch, pause/resume, limpar, rever código",
+        "Tamanho de emojis ajustado (14px)"
+      ]
+    },
+    {
+      "file": "draw_4ano.html",
+      "description": "Desenho Livre 4º Ano",
+      "changes": [
+        "Grade fixa 8×8",
+        "Apenas blocos direcionais (↑↓←→)",
+        "Touch support completo",
+        "Auto-save com indicador visual",
+        "Pause/Resume durante execução",
+        "Botão 'Limpar Tudo'",
+        "Tamanho de emojis ajustado (14px)"
+      ]
+    }
+  ],
+  "documentation": [
+    "TOUCH_IMPROVEMENTS.md",
+    "AUTOSAVE_FEATURE.md",
+    "REVIEW_CODE_BUTTON.md",
+    "TUTORIAL_SIMPLIFICATION.md",
+    "DIRECTIONAL_ROTATION.md",
+    "CLEAR_BUTTON.md",
+    "PAUSE_RESUME.md",
+    "GRADE_LEVELS.md",
+    "TUTORIAL_4ANO.md"
+  ],
+  "testing_checklist": {
+    "touch": [
+      "Arrastar blocos em tablet",
+      "Clicar botões com dedo",
+      "Redimensionar painel lateral touch",
+      "Zoom/scroll funcionando"
+    ],
+    "autosave": [
+      "Draw: adicionar blocos → fechar → reabrir",
+      "Tutorial: fazer desafio 3 → fechar → reabrir no 3",
+      "Indicador 'Salvo' aparece"
+    ],
+    "review_button": [
+      "Completar desafio → modal sucesso",
+      "Clicar 'Rever código' → fecha modal",
+      "Workspace mostra solução"
+    ],
+    "pause_resume": [
+      "Executar → Pausar → estado congelado",
+      "Pausar → Retomar → continua do ponto",
+      "Pausar → Passo → avança 1 comando",
+      "Pausar → Parar → cancela"
+    ],
+    "clear_button": [
+      "Clicar 'Limpar Tudo' → confirmação",
+      "OK → remove blocos (exceto 'Ao iniciar')",
+      "Cancelar → nada acontece"
+    ],
+    "grade_levels": [
+      "Index: 4 cards visíveis (Tutorial 4º, Tutorial 5º, Desenho 4º, Desenho 5º)",
+      "Tutorial 4º: abre tutorial_4ano.html",
+      "Tutorial 5º: abre tutorial.html",
+      "Desenho 4º: vai direto (8×8, Direto)",
+      "Desenho 5º: escolhe config → abre correto"
+    ],
+    "tutorial_4ano": [
+      "Completar desafio 1 (pintar linha 4 blocos)",
+      "Completar desafio 2 (repita 6×)",
+      "Completar desafio 3 (pintar coluna vertical)",
+      "Completar desafio 4 (quadrado 3×3)",
+      "Auto-save separado: fazer desafio 2 → fechar → reabrir → volta ao 2",
+      "Tutorial 5º ano não afetado (continua no desafio dele)"
+    ]
+  },
+  "recommendations": {
+    "4ano": {
+      "activities": [
+        "Desenhe seu nome em pixels",
+        "Crie formas simples (quadrado, retângulo)",
+        "Pinte uma bandeira",
+        "Faça um padrão xadrez"
+      ],
+      "duration": "15-20 minutos por atividade",
+      "concepts": ["Sequência", "Repetição básica", "Coordenadas"]
+    },
+    "5ano": {
+      "activities": [
+        "Padrões geométricos (Turtle)",
+        "Pixel art complexa (Direto, grid grande)",
+        "Estrelas e polígonos (Turtle)",
+        "Labirintos (Direto)"
+      ],
+      "duration": "30-45 minutos por atividade",
+      "concepts": ["Funções", "Rotação", "Ângulos", "Abstração"]
+    }
+  },
+  "future_improvements": [
+    {
+      "feature": "Auto-save separado por configuração",
+      "description": "Cada grid/library tem seu próprio save",
+      "priority": "medium"
+    },
+    {
+      "feature": "Breakpoints visuais",
+      "description": "Clicar em bloco para pausar lá automaticamente",
+      "priority": "high"
+    },
+    {
+      "feature": "Galeria de exemplos",
+      "description": "Projetos prontos para carregar e modificar",
+      "priority": "high"
+    },
+    {
+      "feature": "Histórico de versões",
+      "description": "Últimas 5 versões salvas",
+      "priority": "low"
+    },
+    {
+      "feature": "Exportar como imagem",
+      "description": "Salvar canvas como PNG",
+      "priority": "medium"
+    }
+  ]
+}

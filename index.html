@@ -6,22 +6,30 @@
   <title>Emoji Coder</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 48px; touch-action: manipulation; }
-    .hero { text-align: center; }
+    body { font-family: 'Segoe UI', system-ui, Tahoma, sans-serif; background: #f0f2f5; color: #111827; min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 48px 16px; touch-action: manipulation; }
+    .hero { text-align: center; margin-bottom: 48px; }
     .hero-icon { font-size: 4rem; line-height: 1; margin-bottom: 12px; }
     .hero h1 { font-size: 2.8rem; font-weight: 800; color: #111827; letter-spacing: -0.03em; }
     .hero p { font-size: 1.05rem; color: #6b7280; margin-top: 8px; }
-    .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; padding: 0 16px 40px; }
-    .card { background: #fff; border-radius: 18px; padding: 32px 28px; width: 220px; text-align: center; border: 2px solid #e5e7eb; transition: all 0.2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 12px; -webkit-tap-highlight-color: transparent; }
-    .card:hover { border-color: #2563eb; transform: translateY(-5px); box-shadow: 0 16px 40px rgba(37,99,235,0.12); }
-    .card-icon { font-size: 2.8rem; }
-    .card h2 { font-size: 1.15rem; font-weight: 700; color: #111827; }
-    .card p { font-size: 0.82rem; color: #6b7280; line-height: 1.55; }
+    .content { max-width: 1000px; width: 100%; display: flex; flex-direction: column; gap: 40px; }
+    .grade-section { background: #fff; border-radius: 20px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+    .grade-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb; }
+    .grade-badge { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 16px; border-radius: 12px; }
+    .badge-4ano { background: #dbeafe; color: #2563eb; }
+    .badge-5ano { background: #dcfce7; color: #16a34a; }
+    .grade-title { font-size: 1.5rem; font-weight: 800; color: #111827; }
+    .grade-description { font-size: 0.95rem; color: #6b7280; margin-top: 8px; }
+    .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+    .card { background: #f8f9fb; border-radius: 16px; padding: 28px 24px; width: 220px; text-align: center; border: 2px solid #e5e7eb; transition: all 0.2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 10px; -webkit-tap-highlight-color: transparent; }
+    .card:hover { border-color: #2563eb; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(37,99,235,0.12); background: #fff; }
+    .card-icon { font-size: 2.5rem; }
+    .card h2 { font-size: 1.1rem; font-weight: 700; color: #111827; }
+    .card p { font-size: 0.8rem; color: #6b7280; line-height: 1.5; }
     .card-link { cursor: pointer; }
     .grid-selector { margin-top: 8px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
     .grid-selector label { display: block; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .grid-selector select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fb; font-size: 0.88rem; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s; min-height: 40px; }
-    .grid-selector select:hover { background: #f0f2f5; border-color: #2563eb; }
+    .grid-selector select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.88rem; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s; min-height: 40px; }
+    .grid-selector select:hover { background: #f8f9fb; border-color: #2563eb; }
     .grid-selector select:focus { outline: none; border-color: #2563eb; background: #fff; }
   </style>
 </head>
@@ -31,35 +39,73 @@
     <h1>Emoji Coder</h1>
     <p>Aprenda a programar com a tartaruga</p>
   </div>
-  <div class="cards">
-    <a href="tutorial.html" class="card">
-      <div class="card-icon">📚</div>
-      <h2>Tutorial</h2>
-      <p>8 desafios guiados para aprender a programar passo a passo</p>
-    </a>
-    <div class="card card-link" id="draw-card">
-      <div class="card-icon">🎨</div>
-      <h2>Desenho Livre</h2>
-      <p>Explore todos os blocos e crie seu próprio programa</p>
-      <div class="grid-selector">
-        <label>Biblioteca de Blocos</label>
-        <select id="block-library" onclick="event.stopPropagation()">
-          <option value="turtle">Turtle (Frente/Trás + Girar)</option>
-          <option value="direct">Direto (↑↓←→)</option>
-        </select>
+
+  <div class="content">
+    <!-- Seção 4º Ano -->
+    <div class="grade-section">
+      <div class="grade-header">
+        <div class="grade-badge badge-4ano">4º Ano</div>
+        <div>
+          <div class="grade-title">Para Iniciantes</div>
+          <div class="grade-description">Blocos direcionais simples (↑↓←→) para aprender o básico</div>
+        </div>
       </div>
-      <div class="grid-selector">
-        <label>Tamanho da Grade</label>
-        <select id="grid-size" onclick="event.stopPropagation()">
-          <option value="8">8 × 8</option>
-          <option value="10">10 × 10</option>
-          <option value="12">12 × 12</option>
-          <option value="16">16 × 16</option>
-        </select>
+      <div class="cards">
+        <a href="tutorial_4ano.html" class="card">
+          <div class="card-icon">📚</div>
+          <h2>Tutorial</h2>
+          <p>4 desafios simples com blocos direcionais</p>
+        </a>
+        <a href="draw_4ano.html" class="card">
+          <div class="card-icon">🎨</div>
+          <h2>Desenho Livre</h2>
+          <p>Grade 8×8 fixa para criar desenhos</p>
+        </a>
       </div>
     </div>
+
+    <!-- Seção 5º Ano -->
+    <div class="grade-section">
+      <div class="grade-header">
+        <div class="grade-badge badge-5ano">5º Ano</div>
+        <div>
+          <div class="grade-title">Para Avançados</div>
+          <div class="grade-description">Rotação, funções e configurações avançadas</div>
+        </div>
+      </div>
+      <div class="cards">
+        <a href="tutorial.html" class="card">
+          <div class="card-icon">📘</div>
+          <h2>Tutorial</h2>
+          <p>8 desafios avançados com rotação e funções</p>
+        </a>
+        <div class="card card-link" id="draw-card-5ano">
+          <div class="card-icon">🚀</div>
+          <h2>Desenho Livre</h2>
+          <p>Grade e blocos configuráveis</p>
+          <div class="grid-selector">
+            <label>Biblioteca de Blocos</label>
+            <select id="block-library" onclick="event.stopPropagation()">
+              <option value="turtle">Turtle (Frente/Trás + Girar)</option>
+              <option value="direct">Direto (↑↓←→)</option>
+            </select>
+          </div>
+          <div class="grid-selector">
+            <label>Tamanho da Grade</label>
+            <select id="grid-size" onclick="event.stopPropagation()">
+              <option value="8">8 × 8</option>
+              <option value="10">10 × 10</option>
+              <option value="12">12 × 12</option>
+              <option value="16">16 × 16</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
-    document.getElementById('draw-card').addEventListener('click', (e) => {
+    document.getElementById('draw-card-5ano').addEventListener('click', (e) => {
       if (e.target.id !== 'grid-size' && e.target.id !== 'block-library') {
         const size = document.getElementById('grid-size').value;
         const library = document.getElementById('block-library').value;
@@ -67,6 +113,5 @@
       }
     });
   </script>
-  </div>
 </body>
 </html>
