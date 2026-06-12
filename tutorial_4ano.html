@@ -57,7 +57,9 @@
     .blocklyFlyout .blocklyBlockCanvas { min-width: 180px !important; }
     /* Emojis menores para caber nos blocos */
     .blocklyText { font-size: 14px !important; }
-    g.blocklyDraggable text.blocklyText { transform: translateY(4px); }
+    /* Centralizar TODOS os textos do Blockly verticalmente */
+    #blocklyDiv text { transform: translateY(3px) !important; }
+    .blocklyFlyout text { transform: translateY(3px) !important; }
     #modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
     #modal-overlay.hidden { display: none; }
     #modal-card { background: #fff; border-radius: 20px; padding: 36px 32px 28px; max-width: 480px; width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,0.18); display: flex; flex-direction: column; gap: 14px; animation: modalIn 0.25s ease; }

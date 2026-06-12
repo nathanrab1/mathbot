@@ -64,7 +64,9 @@
     .blocklyFlyout .blocklyScrollbarBackground { fill-opacity: 0.18 !important; }
     /* Emojis menores para caber nos blocos */
     .blocklyText { font-size: 14px !important; }
-    g.blocklyDraggable text.blocklyText { transform: translateY(4px); }
+    /* Centralizar TODOS os textos do Blockly verticalmente */
+    #blocklyDiv text { transform: translateY(3px) !important; }
+    .blocklyFlyout text { transform: translateY(3px) !important; }
   </style>
 </head>
 <body>

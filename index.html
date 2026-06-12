@@ -22,13 +22,13 @@
     .cards { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
     .card { background: #f8f9fb; border-radius: 16px; padding: 28px 24px; width: 220px; text-align: center; border: 2px solid #e5e7eb; transition: all 0.2s; text-decoration: none; display: flex; flex-direction: column; align-items: center; gap: 10px; -webkit-tap-highlight-color: transparent; }
     .card:hover { border-color: #2563eb; transform: translateY(-3px); box-shadow: 0 12px 32px rgba(37,99,235,0.12); background: #fff; }
-    .card-icon { font-size: 2.5rem; }
-    .card h2 { font-size: 1.1rem; font-weight: 700; color: #111827; }
+    .card-icon { font-size: 2.5rem; line-height: 1; display: flex; align-items: center; justify-content: center; }
+    .card h2 { font-size: 1.1rem; font-weight: 700; color: #111827; line-height: 1.3; }
     .card p { font-size: 0.8rem; color: #6b7280; line-height: 1.5; }
     .card-link { cursor: pointer; }
-    .grid-selector { margin-top: 8px; padding-top: 12px; border-top: 1px solid #e5e7eb; }
-    .grid-selector label { display: block; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
-    .grid-selector select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.88rem; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s; min-height: 40px; }
+    .grid-selector { margin-top: 8px; padding-top: 12px; border-top: 1px solid #e5e7eb; width: 100%; }
+    .grid-selector label { display: block; font-size: 0.72rem; color: #9ca3af; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; text-align: left; }
+    .grid-selector select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; font-size: 0.88rem; font-weight: 600; color: #374151; cursor: pointer; transition: all 0.15s; min-height: 40px; display: flex; align-items: center; line-height: 1.2; }
     .grid-selector select:hover { background: #f8f9fb; border-color: #2563eb; }
     .grid-selector select:focus { outline: none; border-color: #2563eb; background: #fff; }
   </style>
