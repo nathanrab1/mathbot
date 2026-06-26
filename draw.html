@@ -41,7 +41,7 @@
     .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
     .btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 1px 3px rgba(0,0,0,0.1); filter: brightness(0.95); }
     .btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
-    #btn-executar { background: #16a34a; color: #fff; }
+    #btn-executar { background: #50A554; color: #fff; }
     #btn-passo    { background: #2563eb; color: #fff; }
     #btn-parar    { background: #dc2626; color: #fff; }
     #speed-row { display: flex; align-items: center; gap: 8px; width: 100%; }
@@ -56,10 +56,10 @@
     #hint { font-size: 0.67rem; color: #9ca3af; text-align: center; line-height: 1.7; padding: 2px 0 4px; }
     .cat-hdr .blocklyFlyoutButtonShadow { opacity: 0; }
     .cat-hdr .blocklyFlyoutButtonText { fill: #fff !important; font-weight: 700 !important; font-size: 12px !important; }
-    .cat-mover    .blocklyFlyoutButtonBackground { fill: #CC9900 !important; }
-    .cat-pintar   .blocklyFlyoutButtonBackground { fill: #E91E63 !important; }
-    .cat-controle .blocklyFlyoutButtonBackground { fill: #2563eb !important; }
-    .cat-funcoes  .blocklyFlyoutButtonBackground { fill: #9C27B0 !important; }
+    .cat-mover    .blocklyFlyoutButtonBackground { fill: #D75930 !important; }
+    .cat-pintar   .blocklyFlyoutButtonBackground { fill: #E9BF49 !important; }
+    .cat-controle .blocklyFlyoutButtonBackground { fill: #4C6AB0 !important; }
+    .cat-funcoes  .blocklyFlyoutButtonBackground { fill: #97989B !important; }
     .blocklyFlyout .blocklyScrollbarKnob       { fill-opacity: 0.55 !important; }
     .blocklyFlyout .blocklyScrollbarBackground { fill-opacity: 0.18 !important; }
     /* Emojis menores para caber nos blocos */
@@ -264,63 +264,63 @@ Blockly.defineBlocksWithJsonArray([
     type: 'ao_iniciar',
     message0: 'Ao iniciar',
     nextStatement: null,
-    colour: '#16a34a',
+    colour: '#50A554',
     tooltip: 'Ponto de início — conecte os blocos aqui'
   },
   {
     type: 'logo_frente',
     message0: 'Frente',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Move 1 passo para frente'
   },
   {
     type: 'logo_tras',
     message0: 'Trás',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Move 1 passo para trás'
   },
   {
     type: 'logo_mover_direita',
     message0: '→ Direita',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Move 1 passo para a direita'
   },
   {
     type: 'logo_mover_esquerda',
     message0: '← Esquerda',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Move 1 passo para a esquerda'
   },
   {
     type: 'logo_mover_cima',
     message0: '↑ Cima',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Move 1 passo para cima'
   },
   {
     type: 'logo_mover_baixo',
     message0: '↓ Baixo',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Move 1 passo para baixo'
   },
   {
     type: 'logo_esquerda',
     message0: '↶ Girar esquerda',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Gira 90° para a esquerda'
   },
   {
     type: 'logo_direita',
     message0: '↷ Girar direita',
     previousStatement: null, nextStatement: null,
-    colour: '#CC9900',
+    colour: '#D75930',
     tooltip: 'Gira 90° para a direita'
   },
   {
@@ -329,14 +329,14 @@ Blockly.defineBlocksWithJsonArray([
     args0: [{ type: 'field_colour', name: 'COR', colour: '#4361ee' }],
     inputsInline: true,
     previousStatement: null, nextStatement: null,
-    colour: '#E91E63',
+    colour: '#E9BF49',
     tooltip: 'Pinta a célula com a cor escolhida'
   },
   {
     type: 'logo_cor_azul',
     message0: 'Pintar 🔵',
     previousStatement: null, nextStatement: null,
-    colour: '#E91E63',
+    colour: '#E9BF49',
     tooltip: 'Pinta a célula com azul'
   },
   {
@@ -345,7 +345,7 @@ Blockly.defineBlocksWithJsonArray([
     args0: [{ type: 'field_input', name: 'NOME', text: 'minha_funcao' }],
     message1: '%1',
     args1: [{ type: 'input_statement', name: 'CORPO' }],
-    colour: '#9C27B0',
+    colour: '#97989B',
     tooltip: 'Define uma função reutilizável'
   },
   {
@@ -354,7 +354,7 @@ Blockly.defineBlocksWithJsonArray([
     args0: [{ type: 'field_input', name: 'NOME', text: 'minha_funcao' }],
     inputsInline: true,
     previousStatement: null, nextStatement: null,
-    colour: '#9C27B0',
+    colour: '#97989B',
     tooltip: 'Executa uma função pelo nome'
   }
 ]);
@@ -363,7 +363,7 @@ Blockly.defineBlocksWithJsonArray([
   const _orig = Blockly.Blocks['controls_repeat_ext'].init;
   Blockly.Blocks['controls_repeat_ext'].init = function () {
     _orig.call(this);
-    this.setColour('#2563eb');
+    this.setColour('#4C6AB0');
   };
 })();
 

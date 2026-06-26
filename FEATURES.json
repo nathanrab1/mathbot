@@ -365,25 +365,42 @@
         "Tamanho da fonte reduzido de 36px original para 14px",
         "Aplicado a .blocklyText e .blocklyDropdownText",
         "Redução total de ~61% do tamanho original",
-        "Mantido transform translateY(4px) para centralização vertical"
+        "Centralização vertical com transform translateY(3px)",
+        "Aplicado a TODOS os textos: #blocklyDiv text e .blocklyFlyout text"
       ],
       "css_rules": {
-        "selector": ".blocklyText, .blocklyDropdownText",
-        "property": "font-size: 14px !important",
-        "reason": "Emojis cabem verticalmente sem distorcer blocos"
+        "font_size": {
+          "selector": ".blocklyText",
+          "property": "font-size: 14px !important",
+          "reason": "Emojis cabem verticalmente sem distorcer blocos"
+        },
+        "vertical_alignment": {
+          "selector": "#blocklyDiv text, .blocklyFlyout text",
+          "property": "transform: translateY(3px) !important",
+          "reason": "Centralizar texto verticalmente em todos os blocos e campos"
+        }
       },
       "progression": {
-        "original": "36px (padrão)",
-        "attempt_1": "42px (expandiu blocos - revertido)",
-        "attempt_2": "28px (ainda grande)",
-        "attempt_3": "20px (redução 30%)",
-        "final": "14px (redução adicional 30%)"
+        "font_size": {
+          "original": "36px (padrão)",
+          "attempt_1": "42px (expandiu blocos - revertido)",
+          "attempt_2": "28px (ainda grande)",
+          "attempt_3": "20px (redução 30%)",
+          "final": "14px (redução adicional 30%)"
+        },
+        "vertical_alignment": {
+          "attempt_1": "dominant-baseline: middle (não funcionou)",
+          "attempt_2": "dominant-baseline: central (não funcionou)",
+          "attempt_3": "text.blocklyText translateY(3px) (parcial)",
+          "final": "#blocklyDiv text, .blocklyFlyout text translateY(3px) (abrangente)"
+        }
       },
       "benefits": [
         "Emojis cabem perfeitamente dentro dos blocos",
         "Sem distorção do layout do Blockly",
         "Mantém aparência limpa e profissional",
-        "Melhora legibilidade ao reduzir sobreposição"
+        "Melhora legibilidade ao reduzir sobreposição",
+        "Centralização vertical em todos os campos (números, funções, dropdowns)"
       ]
     },
     {
@@ -435,8 +452,13 @@
         "plugins": ["@blockly/field-colour"],
         "customization": {
           "text_size": "14px (reduzido de 36px padrão)",
-          "reason": "Emojis precisam caber verticalmente nos blocos",
-          "css_override": ".blocklyText { font-size: 14px !important; }"
+          "vertical_alignment": "translateY(3px) em todos os textos",
+          "reason": "Emojis precisam caber verticalmente nos blocos e texto precisa estar centralizado",
+          "css_overrides": [
+            ".blocklyText { font-size: 14px !important; }",
+            "#blocklyDiv text { transform: translateY(3px) !important; }",
+            ".blocklyFlyout text { transform: translateY(3px) !important; }"
+          ]
         }
       }
     },
